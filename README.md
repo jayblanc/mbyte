@@ -54,6 +54,12 @@ The global architecture is composed of :
 - The **Store** application: It is the main application that is responsible for the management of files and folders. Each user has its own store.
 - An optional **Single Page Application (SPA)** that acts as a unique GUI for users.
 
+### Building modules and docker images
+
+```bash
+mvn clean install  -Dquarkus.container-image.build=true -DskipTests
+```
+
 ### Detailed 
 
 ### Running the application

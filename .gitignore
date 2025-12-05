@@ -8,3 +8,4 @@ target
 repository.xml.generated
 .DS_Store
 .mvn
+/.idea
