@@ -109,6 +109,10 @@ export QUARKUS_HTTP_PORT=8088
 mvn quarkus:dev 
 ```
 
+Notice that we are using docker compose network IPs to connect to other services. 
+You can repeat the same for the store module if needed.
+You can also use the IDE to run the module in dev mode.
+
 ### Using a postman client
 
 ### Writing a test
