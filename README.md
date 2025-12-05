@@ -113,27 +113,13 @@ Notice that we are using docker compose network IPs to connect to other services
 You can repeat the same for the store module if needed.
 You can also use the IDE to run the module in dev mode.
 
-### Using a postman client
+---
 
-### Writing a test
+## Interesting links to learn more
 
-### A REST Resource
+### About REST and JAX-RS
 
 - [REST API Tutorial](https://www.restapitutorial.com/)
 - [JAX-RS Tutorial](https://www.javaguides.net/2018/09/jax-rs-tutorial.html)
 - [Développer avec JAX-RS](https://mbaron.developpez.com/cours/soa/jaxrs/)
 - [Spécification JAX-RS 3.1](https://jakarta.ee/specifications/restful-ws/3.1/jakarta-restful-ws-spec-3.1.pdf)
-
-### A Component
-
-### Persisting information
-
-### Notification
-
-### Authentication
-
-### Discovery of other stores
-
-## Deploy 
-
-
