@@ -64,7 +64,6 @@ services:
       KC_DB_PASSWORD: password
       KC_HOSTNAME: auth.mbyte.fr
       KC_HTTP_PORT: 80
-      KC_HTTP_ENABLED: catrue
       KC_PROXY: edge
       KC_HTTP_ENABLED: true
     labels:
