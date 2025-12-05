@@ -65,6 +65,7 @@ services:
       KC_HOSTNAME: auth.mbyte.fr
       KC_HTTP_PORT: 80
       KC_PROXY: edge
+      KC_HTTP_ENABLED: true
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=mbyte"
@@ -107,7 +108,7 @@ services:
       - MANAGER.TOPOLOGY.PORT=8500
 
   store:
-    image: jerome/store:25.1-SNAPSHOT
+    image: docker.io/oui/store:25.1-SNAPSHOT
     hostname: sheldon
     container_name: mbyte_store_sheldon
     depends_on:
