@@ -10,4 +10,14 @@ public interface DockerStoreProviderConfig {
 
     String server();
 
+    String image();
+
+    Workdir workdir();
+
+    interface Workdir {
+
+        String host();
+
+        String local();
+    }
 }

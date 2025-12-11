@@ -40,7 +40,7 @@ public class TopologyServiceBean implements TopologyService {
         if (config.enabled()) {
             consulClient = Consul.builder().withHttps(config.https()).withHostAndPort(HostAndPort.fromParts(config.host(), config.port()))
                     .build();
-            serviceName = "miage24.store.".concat(config.service().name());
+            serviceName = "mbyte.store.".concat(config.service().name());
             instanceId = serviceName.concat(".1");
             Registration service = this.buildRegistration();
             consulClient.agentClient().register(service);

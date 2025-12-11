@@ -2,6 +2,7 @@ package fr.jayblanc.mbyte.manager.store.dokku;
 
 import com.jcraft.jsch.*;
 import fr.jayblanc.mbyte.manager.store.StoreProvider;
+import fr.jayblanc.mbyte.manager.store.StoreProviderConfig;
 import fr.jayblanc.mbyte.manager.store.StoreProviderException;
 import jakarta.annotation.PostConstruct;
 import jakarta.inject.Inject;
@@ -25,12 +26,17 @@ public class DokkuStoreProvider implements StoreProvider {
     private static final Logger LOGGER = Logger.getLogger(DokkuStoreProvider.class.getName());
     private static final String NAME = "dokku";
 
+    @Inject StoreProviderConfig storeConfig;
     @Inject DokkuStoreProviderConfig config;
 
     private JSch jsch;
 
     @PostConstruct
     public void init() {
+        if ( !storeConfig.provider().equals(NAME) ) {
+            LOGGER.log(Level.INFO, "DokkuStoreProvider not activated (provider is " + storeConfig.provider() + ")");
+            return;
+        }
         try {
             JSch.setConfig("StrictHostKeyChecking", "no");
             byte[] dokkuKey = IOUtils.resourceToByteArray("/ssh/manager_rsa");

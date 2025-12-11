@@ -91,6 +91,9 @@ services:
       - db
       - traefik
       - keycloak
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:rw
+      - mbyte.stores.volume:/home/jboss
     networks:
       mbyte:
         ipv4_address: 172.25.0.6
@@ -146,4 +149,10 @@ volumes:
     driver_opts:
       type: none
       o: bind
-      device: /var/local/mbyte/db
+      device: /var/mbyte/db
+  mbyte.stores.volume:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /var/mbyte/stores

@@ -79,8 +79,10 @@
 ###
 FROM registry.access.redhat.com/ubi8/openjdk-21:1.19
 
-ENV LANGUAGE='en_US:en'
+ARG HOST_DOCKER_GID=138
+ENV HOST_DOCKER_GID=${HOST_DOCKER_GID}
 
+ENV LANGUAGE='en_US:en'
 
 # We make four distinct layers so if there are application changes the library layers can be re-used
 COPY --chown=185 target/quarkus-app/lib/ /deployments/lib/
@@ -89,6 +91,10 @@ COPY --chown=185 target/quarkus-app/app/ /deployments/app/
 COPY --chown=185 target/quarkus-app/quarkus/ /deployments/quarkus/
 
 EXPOSE 8080
+USER root
+RUN groupadd -g "${HOST_DOCKER_GID}" hostdocker 2>/dev/null || \
+    groupmod -o -g "${HOST_DOCKER_GID}" hostdocker; \
+    usermod -a -G hostdocker jboss;
 USER 185
 ENV JAVA_OPTS_APPEND="-Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager"
 ENV JAVA_APP_JAR="/deployments/quarkus-run.jar"

@@ -12,7 +12,32 @@ class DockerStoreProviderTest {
     @Test
     void createAppRunsAgainstRealDockerClient() throws Exception {
         DockerStoreProvider provider = new DockerStoreProvider();
-        injectConfig(provider, () -> System.getProperty("test.docker.host", "unix:///var/run/docker.sock"));
+        injectConfig(provider, new DockerStoreProviderConfig() {
+            @Override
+            public String server() {
+                return System.getProperty("test.docker.host", "unix:///var/run/docker.sock");
+            }
+
+            @Override
+            public String image() {
+                return "jerome/store:25.1-SNAPSHOT";
+            }
+
+            @Override
+            public Workdir workdir() {
+                return new Workdir() {
+                    @Override
+                    public String host() {
+                        return "/tmp/stores";
+                    }
+
+                    @Override
+                    public String local() {
+                        return "/home/jboss/mbyte/data/stores";
+                    }
+                };
+            }
+        });
         invokeInit(provider);
 
         assertDoesNotThrow(() -> provider.createStore("42", "owner", "My store"));

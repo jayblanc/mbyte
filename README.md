@@ -127,11 +127,8 @@ A global Postgresql container is used to store the data of the different applica
 This directory must hold permissions to allow Postgresql container user (999) to read and write data.
 
 ```bash
-sudo mkdir -P /var/local/mbyte
-sudo mkdir -P /var/local/mbyte/db
-sudo chown 1000:1000 /var/local/mbyte
-sudo chown 1000:999 /var/local/mbyte/db # UID/GID for postgres in the official image is typically 999:999
-sudo chmod -R 770 /var/local/mbyte
+sudo mkdir -p /var/mbyte/db
+sudo chmod -R 777 /var/mbyte
 ```
 
 #### Stores directories
@@ -141,9 +138,8 @@ Each store will have its own sub-directory named after the store identifier.
 Two volumes be will created for stores : db and data. This will be handled by the manager directly, only the root folder needs to be created with proper permissions.
 
 ```bash
-sudo mkdir -P /var/local/mbyte/stores
-sudo chown 1000:1000 /var/local/mbyte/stores
-sudo chmod -R 770 /var/local/mbyte/stores
+sudo mkdir -p /var/mbyte/stores
+sudo chmod -R 777 /var/mbyte/stores
 ```
 
 ### Running the application
@@ -178,6 +174,16 @@ mvn quarkus:dev
 Notice that we are using docker compose network IPs to connect to other services. 
 You can repeat the same for the store module if needed.
 You can also use the IDE to run the module in dev mode.
+
+### Using the application
+
+Visit http://www.mbyte.fr to access the main web interface. 
+On the first visit you'll be redirected to Keycloak to create an account and login.
+Create an account of your choice by clicking on 'register' and filling all required fields (email can be user@localhost).
+Once logged in, you can create a store giving an name that will be used an DNS (aka http://mystorename.stores.mbyte.fr).
+As you are the store owner, you can visit your store as the SSO is configured to automatically log you in.
+
+Note: If you use /etc/hosts as domain name resolver, don't forget to add an entry for your store. (127.0.0.1 mystorename.stores.mbyte.fr)
 
 ---
 

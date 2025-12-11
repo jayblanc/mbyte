@@ -4,14 +4,17 @@ import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.command.CreateVolumeResponse;
 import com.github.dockerjava.api.command.InspectVolumeResponse;
-import com.github.dockerjava.api.model.*;
+import com.github.dockerjava.api.model.Bind;
+import com.github.dockerjava.api.model.HostConfig;
+import com.github.dockerjava.api.model.Network;
+import com.github.dockerjava.api.model.Volume;
 import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientConfig;
 import com.github.dockerjava.core.DockerClientImpl;
-import com.github.dockerjava.core.command.CreateContainerCmdImpl;
 import com.github.dockerjava.httpclient5.ApacheDockerHttpClient;
 import com.github.dockerjava.transport.DockerHttpClient;
 import fr.jayblanc.mbyte.manager.store.StoreProvider;
+import fr.jayblanc.mbyte.manager.store.StoreProviderConfig;
 import fr.jayblanc.mbyte.manager.store.StoreProviderException;
 import jakarta.annotation.PostConstruct;
 import jakarta.inject.Inject;
@@ -37,7 +40,6 @@ public class DockerStoreProvider implements StoreProvider {
 
     private static final String INSTANCE_NAME = "mbyte.";
     private static final String NETWORK_NAME = "mbyte.net";
-    private static final String STORES_BASE_PATH = "/var/local/mbyte/stores";
     private static final String STORES_DATA_PATH_SEGMENT = "data";
     private static final String STORES_DB_PATH_SEGMENT = "db";
     private static final String VOLUME_SUFFIX = ".volume";
@@ -48,10 +50,15 @@ public class DockerStoreProvider implements StoreProvider {
 
     private DockerClient client;
 
+    @Inject StoreProviderConfig storeConfig;
     @Inject DockerStoreProviderConfig config;
 
     @PostConstruct
     private void init() {
+        if ( !storeConfig.provider().equals(NAME) ) {
+            LOGGER.log(Level.INFO, "DockerStoreProvider not activated (provider is " + storeConfig.provider() + ")");
+            return;
+        }
         DockerClientConfig clientConfig = DefaultDockerClientConfig.createDefaultConfigBuilder()
                 .withDockerHost(config.server())
                 .build();
@@ -82,11 +89,10 @@ public class DockerStoreProvider implements StoreProvider {
         StringBuilder creationLog = new StringBuilder();
 
         // Step 1: load network 'mbyte.net'
-        String networkName = INSTANCE_NAME.concat(NETWORK_NAME);
-        Optional<Network> network = client.listNetworksCmd().withNameFilter(networkName).exec().stream().findFirst();
+        Optional<Network> network = client.listNetworksCmd().withNameFilter(NETWORK_NAME).exec().stream().findFirst();
         if (network.isEmpty()) {
-            LOGGER.log(Level.SEVERE, networkName + " network not found, cannot create store app");
-            creationLog.append("[Step 1/9] -FAILED- ").append(networkName).append(" network not found, cannot create store app");
+            LOGGER.log(Level.SEVERE, NETWORK_NAME + " network not found, cannot create store app");
+            creationLog.append("[Step 1/9] -FAILED- ").append(NETWORK_NAME).append(" network not found, cannot create store app");
             return creationLog.toString();
         }
         LOGGER.log(Level.INFO, "Found existing network, name: " + network.get().getName() + ", id:" + network.get().getId());
@@ -94,14 +100,15 @@ public class DockerStoreProvider implements StoreProvider {
 
         // Step 2: create db volume 'mbyte.UUID.db.volume'
         String dbVolumeName = INSTANCE_NAME.concat(id).concat(DB_SUFFIX).concat(VOLUME_SUFFIX);
-        Path dbVolumePath =  Paths.get(STORES_BASE_PATH, id, STORES_DB_PATH_SEGMENT);
+        Path dbLocalVolumePath =  Paths.get(config.workdir().local(), id, STORES_DB_PATH_SEGMENT);
+        Path dbHostVolumePath =  Paths.get(config.workdir().host(), id, STORES_DB_PATH_SEGMENT);
         try {
-            Files.createDirectories(dbVolumePath);
-            LOGGER.log(Level.INFO, "Created directories for db volume: " + dbVolumePath);
-            creationLog.append("[Step 2/9] -PROGRESS- ").append("Created directories for db volume: ").append(dbVolumePath).append("\n");
+            Files.createDirectories(dbLocalVolumePath);
+            LOGGER.log(Level.INFO, "Created directories for db volume: " + dbLocalVolumePath);
+            creationLog.append("[Step 2/9] -PROGRESS- ").append("Created directories for db volume: ").append(dbLocalVolumePath).append("\n");
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Failed to create directories for store db volume: " + dbVolumePath, e);
-            creationLog.append("[Step 2/9] -FAILED- ").append("Failed to create directories for store db volume: ").append(dbVolumePath).append("\n");
+            LOGGER.log(Level.SEVERE, "Failed to create directories for store db volume: " + dbLocalVolumePath, e);
+            creationLog.append("[Step 2/9] -FAILED- ").append("Failed to create directories for store db volume: ").append(dbLocalVolumePath).append("\n");
             return creationLog.toString();
         }
         Optional<InspectVolumeResponse> dbVolume = client.listVolumesCmd().exec().getVolumes().stream()
@@ -111,7 +118,7 @@ public class DockerStoreProvider implements StoreProvider {
             CreateVolumeResponse response = client.createVolumeCmd()
                 .withName(dbVolumeName)
                 .withDriver("local")
-                .withDriverOpts(Map.of("type", "none", "o", "bind","device", dbVolumePath.toString()))
+                .withDriverOpts(Map.of("type", "none", "o", "bind","device", dbHostVolumePath.toString()))
                 .exec();
             LOGGER.log(Level.INFO, "Database volume created: " + response.getName());
             creationLog.append("[Step 2/9] -COMPLETED- ").append("Database volume created: ").append(response.getName()).append("\n");
@@ -139,8 +146,8 @@ public class DockerStoreProvider implements StoreProvider {
 
         // Step 4: connect db container to network
         client.connectToNetworkCmd().withContainerId(dbContainer.getId()).withNetworkId(network.get().getId()).exec();
-        LOGGER.log(Level.INFO, "Database container connected to " + networkName);
-        creationLog.append("[Step 4/9] -COMPLETED- ").append("Database container connected to network: ").append(networkName).append("\n");
+        LOGGER.log(Level.INFO, "Database container connected to " + NETWORK_NAME);
+        creationLog.append("[Step 4/9] -COMPLETED- ").append("Database container connected to network: ").append(NETWORK_NAME).append("\n");
 
         // Step 5: start db container
         client.startContainerCmd(dbContainer.getId()).exec();
@@ -149,14 +156,15 @@ public class DockerStoreProvider implements StoreProvider {
 
         // Step 6: create data volume 'mbyte.UUID.data.volume'
         String dataVolumeName = INSTANCE_NAME.concat(id).concat(DATA_SUFFIX).concat(VOLUME_SUFFIX);
-        Path dataVolumePath =  Paths.get(STORES_BASE_PATH, id, STORES_DATA_PATH_SEGMENT);
+        Path dataLocalVolumePath =  Paths.get(config.workdir().local(), id, STORES_DATA_PATH_SEGMENT);
+        Path dataHostVolumePath =  Paths.get(config.workdir().host(), id, STORES_DATA_PATH_SEGMENT);
         try {
-            Files.createDirectories(dataVolumePath);
-            LOGGER.log(Level.INFO, "Created directories for data volume: " + dataVolumePath);
-            creationLog.append("[Step 6/9] -PROGRESS- ").append("Created directories for data volume: ").append(dataVolumePath).append("\n");
+            Files.createDirectories(dataLocalVolumePath);
+            LOGGER.log(Level.INFO, "Created directories for data volume: " + dataLocalVolumePath);
+            creationLog.append("[Step 6/9] -PROGRESS- ").append("Created directories for data volume: ").append(dataLocalVolumePath).append("\n");
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Failed to create directories for store data volume: " + dataVolumePath, e);
-            creationLog.append("[Step 6/9] -FAILED- ").append("Failed to create directories for store data volume: ").append(dataVolumePath).append("\n");
+            LOGGER.log(Level.SEVERE, "Failed to create directories for store data volume: " + dataLocalVolumePath, e);
+            creationLog.append("[Step 6/9] -FAILED- ").append("Failed to create directories for store data volume: ").append(dataLocalVolumePath).append("\n");
             return creationLog.toString();
         }
         Optional<InspectVolumeResponse> dataVolume = client.listVolumesCmd().exec().getVolumes().stream()
@@ -166,7 +174,7 @@ public class DockerStoreProvider implements StoreProvider {
             CreateVolumeResponse response = client.createVolumeCmd()
                     .withName(dataVolumeName)
                     .withDriver("local")
-                    .withDriverOpts(Map.of("type", "none", "o", "bind","device", dataVolumePath.toString()))
+                    .withDriverOpts(Map.of("type", "none", "o", "bind","device", dataHostVolumePath.toString()))
                     .exec();
             LOGGER.log(Level.INFO, "Data volume created: " + response.getName());
             creationLog.append("[Step 6/9] -COMPLETED- ").append("Data volume created: ").append(response.getName()).append("\n");
@@ -177,33 +185,38 @@ public class DockerStoreProvider implements StoreProvider {
 
         // Step 7: create store container 'mbyte.UUID.store.cont'
         String storeContainerName = INSTANCE_NAME.concat(id).concat(STORE_SUFFIX).concat(CONTAINER_SUFFIX);
-        CreateContainerResponse storeContainer = client.createContainerCmd("jerome/store:25.1-SNAPSHOT")
+        CreateContainerResponse storeContainer = client.createContainerCmd(config.image())
                 .withName(storeContainerName)
                 .withHostName(storeContainerName)
                 .withEnv(
                         "QUARKUS_HTTP_PORT=8080",
-                        "QUARKUS_OIDC_AUTH_SERVER_URL=http://auth.mbyte.fr/realms/mbyte",
-                        "MANAGER.TOPOLOGY.HOST=consul",
-                        "MANAGER.TOPOLOGY.PORT=8500"
+                        "STORE.ROOT=/home/jboss",
+                        "STORE.AUTH.OWNER=" + owner,
+                        "STORE.TOPOLOGY.HOST=consul",
+                        "STORE.TOPOLOGY.PORT=8500",
+                        "STORE.TOPOLOGY.SERVICE.HOST=" + name + ".stores.mbyte.fr",
+                        "QUARKUS.DATASOURCE.USERNAME=" + id,
+                        "QUARKUS.DATASOURCE.PASSWORD=" + dbContainerPassword,
+                        "QUARKUS.DATASOURCE.JDBC.URL=jdbc:postgresql://" + dbContainerName + ":5432/store"
                 )
                 .withLabels(Map.of(
                         "traefik.enable", "true",
                         "traefik.docker.network", "mbyte",
-                        "traefik.http.routers." + id + ".rule", "Host(`" + id + ".mbyte.fr`)",
+                        "traefik.http.routers." + id + ".rule", "Host(`" + name + ".stores.mbyte.fr`)",
                         "traefik.http.routers." + id + ".entrypoints", "http",
                         "traefik.http.routers." + id + ".service", id + "-http",
                         "traefik.http.services." + id + "-http.loadbalancer.server.port","8080"
                 ))
                 .withHostConfig(HostConfig.newHostConfig()
-                        .withBinds(new Bind(dataVolumeName, new Volume("/opt/store/data"))))
+                        .withBinds(new Bind(dataVolumeName, new Volume("/home/jboss"))))
                 .exec();
         LOGGER.log(Level.INFO, "Store container created: " + storeContainer.getId());
         creationLog.append("[Step 7/9] -COMPLETED- ").append("Store container created: ").append(storeContainer.getId()).append("\n");
 
         // Step 8: connect store container to the network
         client.connectToNetworkCmd().withContainerId(storeContainer.getId()).withNetworkId(network.get().getId()).exec();
-        LOGGER.log(Level.INFO, "Store container connected to " + networkName);
-        creationLog.append("[Step 8/9] -COMPLETED- ").append("Store container connected to network: ").append(networkName).append("\n");
+        LOGGER.log(Level.INFO, "Store container connected to " + NETWORK_NAME);
+        creationLog.append("[Step 8/9] -COMPLETED- ").append("Store container connected to network: ").append(NETWORK_NAME).append("\n");
 
         // Step 9: start store container
         client.startContainerCmd(storeContainer.getId()).exec();

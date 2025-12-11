@@ -29,7 +29,7 @@ public class CoreServiceBean implements CoreService {
     @Override
     @Transactional(Transactional.TxType.REQUIRED)
     public Store createStore(String name) {
-        LOGGER.log(Level.INFO, "Creating new store with name: {}", name);
+        LOGGER.log(Level.INFO, "Creating new store with name: " + name);
         Store store = new Store();
         store.setId(UUID.randomUUID().toString());
         store.setName(name);
@@ -50,12 +50,12 @@ public class CoreServiceBean implements CoreService {
     }
 
     @Override
-    @Transactional(Transactional.TxType.SUPPORTS)
+    @Transactional(Transactional.TxType.REQUIRED)
     public Store getConnectedUserStore() throws StoreNotFoundException, CoreServiceException {
         LOGGER.log(Level.INFO, "Getting store for connected user");
         String owner = authenticationService.getConnectedProfile().getUsername();
         Store store = findByOwner(owner);
-        String location = lookup(owner);
+        String location = lookup(store.getName());
         if ( location != null ) {
             LOGGER.log(Level.INFO, "Found store instance at location: " + location);
             store.setLocation(location);
@@ -64,11 +64,6 @@ public class CoreServiceBean implements CoreService {
             store.setLocation("#");
         }
         return store;
-    }
-
-    private void updateStatus(String owner, Store.Status status) throws StoreNotFoundException {
-        Store store = findByOwner(owner);
-        store.setStatus(status);
     }
 
     private Store findByOwner(String owner) throws StoreNotFoundException {
