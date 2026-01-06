@@ -2,6 +2,7 @@
 
 ## Project presentation
 
+
 M[iage].Byte project is a clone of Google Drive.   
 It is designed to understand component-based architecture and how to build a scalable application.  
 In the final version, any user that creates an account on the system should gain access to a dedicated instance of the application. 
