@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>fr.jayblanc.mbyte</groupId>
     <artifactId>parent</artifactId>
-    <version>27-SNAPSHOT</version>
+    <version>26.2-SNAPSHOT</version>
     <name>The M[iage].byte project :: Parent</name>
     <packaging>pom</packaging>
     <description>A sample project for teaching purposes</description>
