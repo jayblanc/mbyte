@@ -27,8 +27,6 @@ import fr.jayblanc.mbyte.store.files.FileService;
 import fr.jayblanc.mbyte.store.files.entity.Node;
 import fr.jayblanc.mbyte.store.files.exceptions.*;
 import fr.jayblanc.mbyte.store.notification.NotificationServiceException;
-import io.quarkus.qute.Template;
-import io.quarkus.qute.TemplateInstance;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
@@ -45,7 +43,6 @@ import java.net.URI;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 @Path("nodes")
 @OnlyOwner
@@ -55,7 +52,6 @@ public class NodesResource {
 
     @Inject FileService service;
     @Inject AuthenticationService auth;
-    @Inject Template files;
 
     @GET
     @Transactional(Transactional.TxType.REQUIRED)
@@ -65,34 +61,6 @@ public class NodesResource {
         Node node = service.get("");
         URI root = uriInfo.getRequestUriBuilder().path(node.getId()).build();
         return Response.seeOther(root).build();
-    }
-
-    @GET
-    @Transactional(Transactional.TxType.REQUIRED)
-    @Produces(MediaType.TEXT_HTML)
-    public Response rootView(@Context UriInfo uriInfo) throws NodeNotFoundException {
-        LOGGER.log(Level.INFO, "GET /api/nodes (html)");
-        Node node = service.get("");
-        URI root = uriInfo.getRequestUriBuilder().path(node.getId()).build();
-        return Response.seeOther(root).build();
-    }
-
-    @GET
-    @Path("{id}")
-    @Transactional(Transactional.TxType.REQUIRED)
-    @Produces(MediaType.TEXT_HTML)
-    public TemplateInstance childrenView(@PathParam("id") final String id, @QueryParam("limit") @DefaultValue("20") int limit, @QueryParam("offset") @DefaultValue("0") int offset) throws NodeNotFoundException,
-            NodeTypeException {
-        LOGGER.log(Level.INFO, "GET /api/nodes/{0} (html)", id);
-        Node node = service.get(id);
-        List<Node> nodes = service.list(node.getId());
-        if (node.getType().equals(Node.Type.TREE)) {
-            return files.data("profile", auth.getConnectedProfile()).data("parent", NodeDto.fromNode(node)).data("path", service.path(id))
-                    .data("nodes", nodes.stream().skip(offset).limit(limit).map(NodeDto::fromNode).collect(Collectors.toList()))
-                    .data("limit", limit).data("offset", offset).data("size", nodes.size());
-        } else {
-            throw new NodeTypeException("Node is not a directory");
-        }
     }
 
     @GET
@@ -170,22 +138,6 @@ public class NodesResource {
         }
         URI createdUri = info.getBaseUriBuilder().path(NodesResource.class).path(nid).build();
         return Response.created(createdUri).build();
-    }
-
-    @POST
-    @Path("{id}")
-    @Transactional(Transactional.TxType.REQUIRED)
-    @Produces(MediaType.TEXT_HTML)
-    @Consumes(MediaType.MULTIPART_FORM_DATA)
-    public Response createView(@PathParam("id") final String id, @Valid @MultipartForm NodeCreateDto dto, @Context UriInfo info) throws NodeNotFoundException, NodeTypeException, NodeAlreadyExistsException, DataNotFoundException, DataStoreException, NodePersistenceException, NotificationServiceException {
-        LOGGER.log(Level.INFO, "POST /api/nodes/{0} (html)", id);
-        if (dto.getData() != null) {
-            service.add(id, dto.getName(), dto.getData());
-        } else {
-            service.add(id, dto.getName());
-        }
-        URI createdUri = info.getBaseUriBuilder().path(NodesResource.class).path(id).build();
-        return Response.seeOther(createdUri).build();
     }
 
     @PUT

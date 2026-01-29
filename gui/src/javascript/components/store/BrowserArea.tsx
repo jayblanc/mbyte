@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
 import { CTable, CTableHead, CTableRow, CTableHeaderCell, CTableBody, CTableDataCell, CButton } from '@coreui/react'
 import { CIcon } from '@coreui/icons-react'
-import { cilFolderOpen, cilFile, cilCloudDownload, cilInfo } from '@coreui/icons'
+import { cilFolderOpen, cilCloudDownload, cilInfo } from '@coreui/icons'
 import { useTranslation } from 'react-i18next'
 import Node from '../../api/entities/Node'
+import { getIcon } from '../../utils/iconMapper'
 
 type BrowserAreaProps = Readonly<{
   files: Node[]
@@ -26,6 +27,7 @@ export function BrowserArea({ files, viewMode, onSelect, onAction, showParent, o
 
   const maxLength = windowWidth < 768 ? 20 : 40
   const truncateName = (name: string) => name.length > maxLength ? name.substring(0, maxLength - 3) + '...' : name
+
   // fill all available space, no padding
   return (
     <div style={{ height: '100%', width: '100%', overflow: 'auto' }}>
@@ -69,15 +71,15 @@ export function BrowserArea({ files, viewMode, onSelect, onAction, showParent, o
               >
                 <CTableDataCell style={{ background: (idx + (showParent ? 1 : 0)) % 2 === 0 ? '#fafafa' : '#f5f6f7', padding: '12px 16px', verticalAlign: 'middle', lineHeight: '20px', minHeight: 56, boxSizing: 'border-box', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   <span style={{ marginRight: 8 }}>
-                    <CIcon icon={f.isFolder ? cilFolderOpen : cilFile} />
+                    <CIcon icon={getIcon(f)} />
                   </span>
                   {f.isFolder ? <strong title={f.name}>{truncateName(f.name)}</strong> : <span title={f.name}>{truncateName(f.name)}</span>}
                 </CTableDataCell>
                 <CTableDataCell style={{ background: (idx + (showParent ? 1 : 0)) % 2 === 0 ? '#fafafa' : '#f5f6f7', padding: '12px 16px', verticalAlign: 'middle', lineHeight: '20px', minHeight: 56, boxSizing: 'border-box' }} className="text-end">{f.size ? `${Math.round(f.size / 1024)} KB` : ''}</CTableDataCell>
-                <CTableDataCell style={{ background: (idx + (showParent ? 1 : 0)) % 2 === 0 ? '#fafafa' : '#f5f6f7', padding: '12px 16px', verticalAlign: 'middle', lineHeight: '20px', minHeight: 56, boxSizing: 'border-box' }} className="text-end">{f.mimetype || 'Unknown'}</CTableDataCell>
-                <CTableDataCell style={{ background: (idx + (showParent ? 1 : 0)) % 2 === 0 ? '#fafafa' : '#f5f6f7', padding: '12px 16px', verticalAlign: 'middle', lineHeight: '20px', minHeight: 56, boxSizing: 'border-box' }} className="text-end">{f.creationTs ? new Date(f.creationTs).toLocaleDateString() : ''}</CTableDataCell>
-                <CTableDataCell style={{ background: (idx + (showParent ? 1 : 0)) % 2 === 0 ? '#fafafa' : '#f5f6f7', padding: '12px 16px', verticalAlign: 'middle', lineHeight: '20px', minHeight: 56, boxSizing: 'border-box' }} className="text-end">{f.modificationTs ? new Date(f.modificationTs).toLocaleDateString() : ''}</CTableDataCell>
-                <CTableDataCell style={{ background: (idx + (showParent ? 1 : 0)) % 2 === 0 ? '#fafafa' : '#f5f6f7', width: '10%', padding: '12px 16px', verticalAlign: 'middle', lineHeight: '20px', minHeight: 56, boxSizing: 'border-box', whiteSpace: 'nowrap' }} className="text-end">
+                <CTableDataCell style={{ background: (idx + (showParent ? 1 : 0)) % 2 === 0 ? '#fafafa' : '#f6f7', padding: '12px 16px', verticalAlign: 'middle', lineHeight: '20px', minHeight: 56, boxSizing: 'border-box' }} className="text-end">{f.mimetype || 'Unknown'}</CTableDataCell>
+                <CTableDataCell style={{ background: (idx + (showParent ? 1 : 0)) % 2 === 0 ? '#fafafa' : '#f6f7', padding: '12px 16px', verticalAlign: 'middle', lineHeight: '20px', minHeight: 56, boxSizing: 'border-box' }} className="text-end">{f.creationTs ? new Date(f.creationTs).toLocaleDateString() : ''}</CTableDataCell>
+                <CTableDataCell style={{ background: (idx + (showParent ? 1 : 0)) % 2 === 0 ? '#fafafa' : '#f6f7', padding: '12px 16px', verticalAlign: 'middle', lineHeight: '20px', minHeight: 56, boxSizing: 'border-box' }} className="text-end">{f.modificationTs ? new Date(f.modificationTs).toLocaleDateString() : ''}</CTableDataCell>
+                <CTableDataCell style={{ background: (idx + (showParent ? 1 : 0)) % 2 === 0 ? '#fafafa' : '#f6f7', width: '10%', padding: '12px 16px', verticalAlign: 'middle', lineHeight: '20px', minHeight: 56, boxSizing: 'border-box', whiteSpace: 'nowrap' }} className="text-end">
                   {f.isFolder ? (
                     <div className="d-flex gap-2 justify-content-end">
                       <CButton color="light" size="sm" onClick={(e) => { e.stopPropagation(); onAction?.('info', f) }}>
@@ -124,7 +126,7 @@ export function BrowserArea({ files, viewMode, onSelect, onAction, showParent, o
                 <div className="card h-100">
                   <div className="card-body">
                     <div className="d-flex align-items-center gap-2">
-                      <CIcon icon={f.isFolder ? cilFolderOpen : cilFile} />
+                      <CIcon icon={getIcon(f)} />
                       <div>
                         <div className="fw-semibold" title={f.name}>{truncateName(f.name)}</div>
                         <div className="text-muted small">{f.isFolder ? 'Folder' : (f.mimetype || 'Unknown')} • {f.modificationTs ? new Date(f.modificationTs).toLocaleDateString() : ''}</div>

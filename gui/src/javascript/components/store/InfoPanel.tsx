@@ -1,6 +1,8 @@
 import { CCard, CCardBody } from '@coreui/react'
+import { CIcon } from '@coreui/icons-react'
 import { useEffect, useState } from 'react'
 import Node from '../../api/entities/Node'
+import { getIcon } from '../../utils/iconMapper'
 
 type InfoPanelProps = Readonly<{
   selected: Node | null
@@ -38,16 +40,22 @@ export function InfoPanel({ selected }: InfoPanelProps) {
         {selected && (
           <CCard>
             <CCardBody>
+              <div className="d-flex align-items-center gap-2 mb-2">
+                <CIcon icon={getIcon(selected)} />
+                {selected.isFolder ? (
+                  <strong>Folder name: <span title={selected.name}>{truncateName(selected.name)}</span></strong>
+                ) : (
+                  <strong title={selected.name}>{truncateName(selected.name)}</strong>
+                )}
+              </div>
               {selected.isFolder ? (
                 <>
-                  <div className="mb-2"><strong>Folder name: <span title={selected.name}>{truncateName(selected.name)}</span></strong></div>
                   <div className="text-muted small">Type: folder</div>
                   <div className="text-muted small">Modified: {selected.modificationTs ? new Date(selected.modificationTs).toLocaleString() : ''}</div>
                   {/* Future: size calculation */}
                 </>
               ) : (
                 <>
-                  <div className="mb-2"><strong title={selected.name}>{truncateName(selected.name)}</strong></div>
                   <div className="text-muted small">Type: file</div>
                   <div className="text-muted small">MIME Type: {selected.mimetype || 'Unknown'}</div>
                   <div className="text-muted small">Size: {formatSize(selected.size)}</div>

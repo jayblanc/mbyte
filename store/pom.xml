@@ -14,7 +14,6 @@
     <properties>
         <skipITs>true</skipITs>
         <version.tika>2.9.1</version.tika>
-        <version.quinoa>2.4.2</version.quinoa>
         <version.lucene>9.4.1</version.lucene>
         <version.consul-client>1.5.3</version.consul-client>
     </properties>
@@ -59,10 +58,6 @@
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-jdbc-postgresql</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-resteasy-qute</artifactId>
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>

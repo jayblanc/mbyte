@@ -21,8 +21,6 @@ import fr.jayblanc.mbyte.store.topology.TopologyConfig;
 import fr.jayblanc.mbyte.store.topology.TopologyException;
 import fr.jayblanc.mbyte.store.topology.TopologyService;
 import fr.jayblanc.mbyte.store.topology.entity.Neighbour;
-import io.quarkus.qute.Template;
-import io.quarkus.qute.TemplateInstance;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
@@ -41,7 +39,6 @@ public class NeighboursResource {
     @Inject TopologyConfig config;
     @Inject TopologyService neighbourhood;
     @Inject AuthenticationService auth;
-    @Inject Template network;
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -50,10 +47,4 @@ public class NeighboursResource {
         return neighbourhood.list();
     }
 
-    @GET
-    @Produces(MediaType.TEXT_HTML)
-    public TemplateInstance getNeighboursHtml() throws TopologyException {
-        LOGGER.log(Level.INFO, "GET /api/network (html)");
-        return network.data("profile", auth.getConnectedProfile()).data("neighbours", neighbourhood.list());
-    }
 }
