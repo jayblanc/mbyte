@@ -41,6 +41,7 @@ public class AppsResource {
     @Inject CoreService core;
     @Inject ProcessEngine engine;
     @Inject ApplicationCommandProvider commandProvider;
+    @Inject ApplicationDescriptorRegistry descriptorRegistry;
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
