@@ -182,4 +182,4 @@ volumes:
     driver_opts:
       type: none
       o: bind
-      device: /Users/amadou/Documents/Cours/Scalabilité/mbyte/data/db
+      device: ./data/db
