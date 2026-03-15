@@ -12,8 +12,8 @@ public class AuditEvent {
     @Column(length = 36)
     private final String id;
 
-    @Column(nullable = false)
-    private Instant ts;
+    @Column(name = "ts", nullable = false)
+    private Instant timeStamp;
 
     @Column(name = "user_id", length = 128)
     private String userId;
@@ -28,9 +28,6 @@ public class AuditEvent {
     @Column(length = 512)
     private String resource;
 
-    @Column(length = 64)
-    private String ip;
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 16)
     private AuditStatus status;
@@ -41,21 +38,25 @@ public class AuditEvent {
     @Column(length = 512)
     private String path;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 16)
+    private AuditService service;
+
     public AuditEvent() {
         this.id = UUID.randomUUID().toString();
-        this.ts = Instant.now();
+        this.timeStamp = Instant.now();
     }
 
     public String getId() {
         return id;
     }
 
-    public Instant getTs() {
-        return ts;
+    public Instant getTimeStamp() {
+        return timeStamp;
     }
 
-    public void setTs(Instant ts) {
-        this.ts = ts;
+    public void setTimeStamp(Instant timeStamp) {
+        this.timeStamp = timeStamp;
     }
 
     public String getUserId() {
@@ -90,14 +91,6 @@ public class AuditEvent {
         this.resource = resource;
     }
 
-    public String getIp() {
-        return ip;
-    }
-
-    public void setIp(String ip) {
-        this.ip = ip;
-    }
-
     public AuditStatus getStatus() {
         return status;
     }
@@ -120,5 +113,13 @@ public class AuditEvent {
 
     public void setPath(String path) {
         this.path = path;
+    }
+
+    public AuditService getService() {
+        return service;
+    }
+
+    public void setService(AuditService service) {
+        this.service = service;
     }
 }
