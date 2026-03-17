@@ -25,9 +25,6 @@ public class AuditEvent {
     @Column(nullable = false, length = 32)
     private AuditAction action;
 
-    @Column(length = 512)
-    private String resource;
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 16)
     private AuditStatus status;
@@ -81,14 +78,6 @@ public class AuditEvent {
 
     public void setAction(AuditAction action) {
         this.action = action;
-    }
-
-    public String getResource() {
-        return resource;
-    }
-
-    public void setResource(String resource) {
-        this.resource = resource;
     }
 
     public AuditStatus getStatus() {
