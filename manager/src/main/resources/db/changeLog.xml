@@ -34,4 +34,37 @@
         </createTable>
     </changeSet>
 
+    <!-- Multi-Store Support: Permettre plusieurs stores par utilisateur -->
+    <changeSet id="2" author="victor">
+        <comment>Add unique constraint on owner+name to support multiple stores per user</comment>
+        <addUniqueConstraint
+            tableName="store"
+            columnNames="owner, name"
+            constraintName="uk_store_owner_name"/>
+        <createIndex tableName="store" indexName="idx_store_owner_name">
+            <column name="owner"/>
+            <column name="name"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- Multi-Server Support: Track which server hosts each store -->
+    <changeSet id="3" author="victor">
+        <comment>Add serverId column to store table for multi-server deployment</comment>
+        <addColumn tableName="store">
+            <column name="serverid" type="varchar(255)"/>
+        </addColumn>
+        <createIndex tableName="store" indexName="idx_store_serverid">
+            <column name="serverid"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- Multi-Server Replication: Allow same store name on different servers -->
+    <changeSet id="4" author="victor">
+        <comment>Change unique constraint to (owner, name, serverId) to support store replication across servers</comment>
+        <dropUniqueConstraint tableName="store" constraintName="uk_store_owner_name"/>
+        <addUniqueConstraint tableName="store"
+            columnNames="owner, name, serverid"
+            constraintName="uk_store_owner_name_server"/>
+    </changeSet>
+
 </databaseChangeLog>

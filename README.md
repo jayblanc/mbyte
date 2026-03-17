@@ -177,7 +177,7 @@ You can also use the IDE to run the module in dev mode.
 
 ### Using the application
 
-Visit http://www.mbyte.fr to access the main web interface. 
+Visit http://www.mbyte.fr to access the main web interface.
 On the first visit you'll be redirected to Keycloak to create an account and login.
 Create an account of your choice by clicking on 'register' and filling all required fields (email can be user@localhost).
 Once logged in, you can create a store giving an name that will be used an DNS (aka http://mystorename.stores.mbyte.fr).

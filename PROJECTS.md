@@ -47,7 +47,7 @@ The integration includes mechanisms for retrieving secrets from Vault as needed,
 This project enables the deployment of MByte stores across multiple servers, allowing for improved scalability and performance.
 By distributing stores across different servers, the system can handle increased workloads and provide better response times for users.
 The multi-server deployment is managed through a centralized configuration system, ensuring that stores are properly allocated and balanced across available resources. 
-
+-6666
 ### Full Text Search Integration
 
 #### Description

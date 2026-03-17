@@ -5,11 +5,22 @@ import jakarta.persistence.*;
 
 @Entity
 @NamedQueries({
-    @NamedQuery(name = "Store.findByOwner", query = "SELECT s FROM Store s WHERE s.owner = :owner")
+    @NamedQuery(name = "Store.findByOwner", query = "SELECT s FROM Store s WHERE s.owner = :owner ORDER BY s.creationDate"),
+    @NamedQuery(name = "Store.findByOwnerAndName", query = "SELECT s FROM Store s WHERE s.owner = :owner AND s.name = :name"),
+    @NamedQuery(name = "Store.countByOwner", query = "SELECT COUNT(s) FROM Store s WHERE s.owner = :owner"),
+    @NamedQuery(name = "Store.findByServerId", query = "SELECT s FROM Store s WHERE s.serverId = :serverId"),
+    @NamedQuery(name = "Store.findByOwnerAndNameAndServerId", query = "SELECT s FROM Store s WHERE s.owner = :owner AND s.name = :name AND s.serverId = :serverId")
 })
-@Table(indexes = {
-        @Index(name = "stores_idx", columnList = "owner")
-})
+@Table(
+    indexes = {
+        @Index(name = "stores_idx", columnList = "owner"),
+        @Index(name = "stores_owner_name_idx", columnList = "owner, name"),
+        @Index(name = "idx_store_serverid", columnList = "serverId")
+    },
+    uniqueConstraints = {
+        @UniqueConstraint(name = "uk_store_owner_name_server", columnNames = {"owner", "name", "serverId"})
+    }
+)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Store {
 
@@ -26,6 +37,7 @@ public class Store {
     private String log;
     @Transient
     private String location;
+    private String serverId;
 
     public Store() {
     }
@@ -100,6 +112,14 @@ public class Store {
 
     public void setLocation(String location) {
         this.location = location;
+    }
+
+    public String getServerId() {
+        return serverId;
+    }
+
+    public void setServerId(String serverId) {
+        this.serverId = serverId;
     }
 
     public enum Status {

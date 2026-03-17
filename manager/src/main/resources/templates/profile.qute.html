@@ -54,21 +54,31 @@
                 </div>
             </div>
             <div class="row mt-4 m-3">
-                <div class="col-xl-4 col-lg-6">
+                <!-- Bouton pour créer un nouveau store (toujours visible) -->
+                <div class="col-12 mb-3">
+                    <button class="btn btn-primary" type="button" data-toggle="modal" data-target="#createStoreModal">
+                        <em class="fa fa-plus mr-2"></em>Create new store
+                    </button>
+                </div>
+
+                <!-- Liste des stores -->
+                {#if stores.isEmpty}
+                <div class="col-12">
+                    <div class="alert alert-info">
+                        <em class="fa fa-info-circle mr-2"></em>You don't have any store yet. Create one to get started!
+                    </div>
+                </div>
+                {#else}
+                {#for s in stores}
+                <div class="col-xl-4 col-lg-6 mb-3">
                     <div class="card b">
                         <div class="card-header">
                             <div class="float-right">
                                 <div class="badge badge-info">free plan</div>
                             </div>
-                            {#if store??}
-                                <h4 class="m-0">{store.name}</h4>
-                                <small class="text-muted">{store.location}</small>
-                            {#else}
-                                <h4 class="m-0">Name not set</h4>
-                                <small class="text-muted">no location available</small>
-                            {/if}
+                            <h4 class="m-0">{s.name}</h4>
+                            <small class="text-muted">{s.location}</small>
                         </div>
-                        {#if store??}
                         <div class="card-body">
                             <div class="d-flex align-items-center">
                                 <div class="w-100" data-toggle="tooltip" data-title="Health">
@@ -84,15 +94,11 @@
                         <table class="table">
                             <tbody>
                             <tr>
-                                <td>
-                                    <strong>Creation date</strong>
-                                </td>
-                                <td>{store.creationDate}</td>
+                                <td><strong>Creation date</strong></td>
+                                <td>{s.creationDate}</td>
                             </tr>
                             <tr>
-                                <td>
-                                    <strong> Owner</strong>
-                                </td>
+                                <td><strong>Owner</strong></td>
                                 <td>
                                     <a href="" data-toggle="tooltip" data-title="Team leader">
                                         <img class="rounded-circle thumb24" src="/img/user/03.jpg" alt="project member">
@@ -100,54 +106,37 @@
                                 </td>
                             </tr>
                             <tr>
-                                <td>
-                                    <strong>Authorized users</strong>
-                                </td>
-                                <td>
-                                    <a class="inline" href="#">
-                                        <img class="rounded-circle thumb24" src="/img/user/02.jpg" alt="project member">
-                                    </a>
-                                    <a class="inline" href="#">
-                                        <img class="rounded-circle thumb24" src="/img/user/04.jpg" alt="project member">
-                                    </a>
-                                    <a class="inline" href="#">
-                                        <img class="rounded-circle thumb24" src="/img/user/05.jpg" alt="project member">
-                                    </a>
-                                    <a class="inline" href="#">
-                                        <img class="rounded-circle thumb24" src="/img/user/06.jpg" alt="project member">
-                                    </a>
-                                    <a class="inline" href="#">
-                                        <strong>+5</strong>
-                                    </a>
-                                </td>
+                                <td><strong>Server</strong></td>
+                                <td><span class="badge badge-secondary">{s.serverId ?: 'N/A'}</span></td>
                             </tr>
                             <tr>
-                                <td>
-                                    <strong>Status</strong>
-                                </td>
-                                <td>
-                                    {store.status}
-                                </td>
+                                <td><strong>Status</strong></td>
+                                <td>{s.status}</td>
                             </tr>
                             </tbody>
                         </table>
-                        {/if}
                         <div class="card-footer text-center">
-                            {#if store??}
-                                <a href="{store.location}" class="btn btn-secondary" role="button"><em class="fa fa-external-link-alt mr-2"></em> Go to store</a>
-                            {#else}
-                                <button class="btn btn-secondary" type="button" data-toggle="modal" data-target="#createStoreModal"><em class="fa fa-plus mr-2"></em>Create your store</button>
-                            {/if}
+                            <a href="{s.location}" class="btn btn-secondary btn-sm" role="button">
+                                <em class="fa fa-external-link-alt mr-1"></em> Go to store
+                            </a>
+                            <button class="btn btn-info btn-sm ml-2" type="button" onclick="replicateStore('{s.id}', '{s.name}')">
+                                <em class="fa fa-copy mr-1"></em> Replicate
+                            </button>
+                            <button class="btn btn-danger btn-sm ml-2" type="button" onclick="deleteStore('{s.id}', '{s.name}')">
+                                <em class="fa fa-trash mr-1"></em> Delete
+                            </button>
                         </div>
                     </div>
                 </div>
+                {/for}
+                {/if}
             </div>
         </div>
     </section>
 </div>
 <div id="createStoreModal" class="modal fade" role="dialog">
     <div class="modal-dialog">
-        <form method="post" action="/api/profiles/{profile.id}/store" enctype="application/x-www-form-urlencoded">
+        <form id="createStoreForm" onsubmit="return false;">
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal">&times;</button>
@@ -159,16 +148,82 @@
                             <div class="input-group-prepend">
                                 <span class="input-group-text" id="basic-addon1">Store name</span>
                             </div>
-                            <input type="text" id="name" name="name" class="form-control" aria-label="Store Name" aria-describedby="basic-addon1">
+                            <input type="text" id="name" name="name" class="form-control" aria-label="Store Name" aria-describedby="basic-addon1" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">Server</span>
+                            </div>
+                            <select id="serverId" name="serverId" class="form-control">
+                                <option value="">Automatic (load balanced)</option>
+                                {#for server in servers}
+                                <option value="{server.id}">{server.name} ({server.id})</option>
+                                {/for}
+                            </select>
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="submit" class="btn btn-default" id="create">Create</button>
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary" id="create">Create</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                 </div>
             </div>
         </form>
+    </div>
+</div>
+
+<!-- Replicate Store Modal -->
+<div id="replicateStoreModal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+        <form id="replicateStoreForm" onsubmit="return false;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">Replicate Store</h4>
+                </div>
+                <div class="modal-body">
+                    <p>Replicate store "<strong id="replicateStoreName"></strong>" to another server:</p>
+                    <div class="form-row">
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">Target Server</span>
+                            </div>
+                            <select id="replicateServerId" name="serverId" class="form-control" required>
+                                {#for server in servers}
+                                <option value="{server.id}">{server.name} ({server.id})</option>
+                                {/for}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-info" id="confirmReplicate">Replicate</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Confirmation Modal for Delete -->
+<div id="deleteStoreModal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Delete Store</h4>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete the store "<strong id="deleteStoreName"></strong>"?</p>
+                <p class="text-danger"><em class="fa fa-exclamation-triangle mr-1"></em>This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" id="confirmDelete">Delete</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+            </div>
+        </div>
     </div>
 </div>
 <script src="/vendor/modernizr/modernizr.custom.js"></script>
@@ -180,5 +235,91 @@
 <script src="/vendor/animo/animo.js"></script>
 <script src="/vendor/screenfull/dist/screenfull.js"></script>
 <script src="/js/app.js"></script>
+<script>
+    var storeIdToReplicate = null;
+
+    function replicateStore(storeId, storeName) {
+        storeIdToReplicate = storeId;
+        document.getElementById('replicateStoreName').textContent = storeName;
+        $('#replicateStoreModal').modal('show');
+    }
+
+    document.getElementById('replicateStoreForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        if (storeIdToReplicate) {
+            var targetServerId = document.getElementById('replicateServerId').value;
+            fetch('/api/profiles/{profile.id}/stores/' + storeIdToReplicate + '/replicate', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                body: 'serverId=' + encodeURIComponent(targetServerId)
+            }).then(function(response) {
+                if (response.ok) {
+                    $('#replicateStoreModal').modal('hide');
+                    window.location.reload();
+                } else {
+                    response.text().then(function(text) {
+                        alert('Error replicating store: ' + text);
+                    });
+                }
+            }).catch(function(error) {
+                alert('Error: ' + error);
+            });
+        }
+    });
+
+    var storeIdToDelete = null;
+
+    function deleteStore(storeId, storeName) {
+        storeIdToDelete = storeId;
+        document.getElementById('deleteStoreName').textContent = storeName;
+        $('#deleteStoreModal').modal('show');
+    }
+
+    document.getElementById('confirmDelete').addEventListener('click', function() {
+        if (storeIdToDelete) {
+            fetch('/api/profiles/{profile.id}/stores/' + storeIdToDelete, {
+                method: 'DELETE'
+            }).then(function(response) {
+                if (response.ok) {
+                    window.location.reload();
+                } else {
+                    alert('Error deleting store');
+                }
+            }).catch(function(error) {
+                alert('Error: ' + error);
+            });
+        }
+        $('#deleteStoreModal').modal('hide');
+    });
+
+    // Create store via JavaScript (like delete)
+    document.getElementById('createStoreForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        var storeName = document.getElementById('name').value;
+        var serverId = document.getElementById('serverId').value;
+        if (!storeName) {
+            alert('Please enter a store name');
+            return;
+        }
+        var body = 'name=' + encodeURIComponent(storeName);
+        if (serverId) {
+            body += '&serverId=' + encodeURIComponent(serverId);
+        }
+        fetch('/api/profiles/{profile.id}/stores', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: body
+        }).then(function(response) {
+            if (response.ok) {
+                $('#createStoreModal').modal('hide');
+                window.location.reload();
+            } else {
+                alert('Error creating store');
+            }
+        }).catch(function(error) {
+            alert('Error: ' + error);
+        });
+    });
+</script>
 </body>
 </html>

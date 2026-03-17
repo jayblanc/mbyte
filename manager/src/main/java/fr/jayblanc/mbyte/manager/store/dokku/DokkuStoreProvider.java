@@ -1,6 +1,7 @@
 package fr.jayblanc.mbyte.manager.store.dokku;
 
 import com.jcraft.jsch.*;
+import fr.jayblanc.mbyte.manager.server.entity.Server;
 import fr.jayblanc.mbyte.manager.store.StoreProvider;
 import fr.jayblanc.mbyte.manager.store.StoreProviderConfig;
 import fr.jayblanc.mbyte.manager.store.StoreProviderException;
@@ -71,6 +72,12 @@ public class DokkuStoreProvider implements StoreProvider {
         }
     }
 
+    @Override
+    public List<String> listStores(Server server) throws StoreProviderException {
+        // Dokku doesn't support multi-server, delegate to listAllStores
+        return listAllStores();
+    }
+
     /*
     ssh dokku apps:create <pseudo>
     ssh dokku postgres:create <pseudo>-db
@@ -136,6 +143,12 @@ public class DokkuStoreProvider implements StoreProvider {
     }
 
     @Override
+    public String createStore(String id, String owner, String name, Server server) throws StoreProviderException {
+        // Dokku doesn't support multi-server, delegate to default method
+        return createStore(id, owner, name);
+    }
+
+    @Override
     public String destroyStore(String name) throws StoreProviderException {
         LOGGER.log(Level.INFO, "[dokku] Deleting app");
         String cmd1 = "--force apps:destroy " + name;
@@ -153,6 +166,12 @@ public class DokkuStoreProvider implements StoreProvider {
         }
 
         return "";
+    }
+
+    @Override
+    public String destroyStore(String id, Server server) throws StoreProviderException {
+        // Dokku doesn't support multi-server, delegate to default method
+        return destroyStore(id);
     }
 
     private int execute(String username, String command, StringBuffer output) throws JSchException, IOException {
