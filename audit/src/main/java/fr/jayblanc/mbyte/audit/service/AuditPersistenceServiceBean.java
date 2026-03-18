@@ -14,20 +14,33 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package fr.jayblanc.mbyte.store.audit;
+package fr.jayblanc.mbyte.audit.service;
 
-import fr.jayblanc.mbyte.store.audit.entity.AuditEvent;
+import fr.jayblanc.mbyte.audit.model.AuditEvent;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import org.eclipse.microprofile.reactive.messaging.Channel;
-import org.eclipse.microprofile.reactive.messaging.Emitter;
+import jakarta.persistence.EntityManager;
+import jakarta.transaction.Transactional;
+
+import java.util.List;
 
 @ApplicationScoped
-public class AuditServiceBean implements AuditService {
-    @Inject @Channel("audit-events") Emitter<AuditEvent> emitter;
+public class AuditPersistenceServiceBean implements AuditPersistenceService {
+
+    @Inject EntityManager em;
 
     @Override
+    @Transactional
     public void save(AuditEvent auditEvent) {
-        emitter.send(auditEvent);
+        if (auditEvent.getId() == null) {
+            auditEvent.setId(java.util.UUID.randomUUID().toString());
+        }
+        em.persist(auditEvent);
+    }
+
+    @Override
+    public List<AuditEvent> list(int limit, String storeId) {
+        var query = em.createQuery("SELECT a FROM AuditEvent a ORDER BY a.timeStamp DESC", AuditEvent.class);
+        return query.setMaxResults(limit).getResultList();
     }
 }

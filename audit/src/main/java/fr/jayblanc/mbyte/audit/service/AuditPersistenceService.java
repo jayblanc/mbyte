@@ -14,27 +14,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package fr.jayblanc.mbyte.store.api.resources;
+package fr.jayblanc.mbyte.audit.service;
 
-import fr.jayblanc.mbyte.store.audit.AuditService;
-import fr.jayblanc.mbyte.store.audit.entity.AuditEvent;
-import jakarta.annotation.security.RolesAllowed;
-import jakarta.inject.Inject;
-import jakarta.ws.rs.*;
-import jakarta.ws.rs.core.MediaType;
+import fr.jayblanc.mbyte.audit.model.AuditEvent;
 
 import java.util.List;
 
-@Path("/api/audits")
-@Produces(MediaType.APPLICATION_JSON)
-public class AuditResource {
-    @Inject
-    AuditService auditService;
+public interface AuditPersistenceService {
+    void save(AuditEvent auditEvent);
 
-    @GET
-    @RolesAllowed("admin")
-    public List<AuditEvent> list(@QueryParam("limit") @DefaultValue("100") int limit) {
-        if (limit > 500) limit = 500;
-        return auditService.list(limit);
-    }
+    List<AuditEvent> list(int limit, String storeId);
 }

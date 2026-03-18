@@ -14,11 +14,17 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package fr.jayblanc.mbyte.store.audit;
+package fr.jayblanc.mbyte.audit.model;
 
-import fr.jayblanc.mbyte.store.audit.entity.AuditEvent;
-import java.util.List;
-
-public interface AuditService {
-    void save(AuditEvent auditEvent);
+public enum AuditAction {
+    UPLOAD,
+    DOWNLOAD,
+    CREATE_FOLDER,
+    DELETE,
+    RENAME,
+    UPDATE_FILE,
+    LIST_CHILDREN,
+    VIEW_NODE,
+    SEARCH,
+    NETWORK_INFO
 }

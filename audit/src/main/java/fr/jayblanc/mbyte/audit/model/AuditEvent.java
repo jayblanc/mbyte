@@ -14,31 +14,50 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package fr.jayblanc.mbyte.store.audit.entity;
+package fr.jayblanc.mbyte.audit.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 import java.time.Instant;
 import java.util.UUID;
 
-@JsonIgnoreProperties(ignoreUnknown = true)
+@Entity
+@Table(name = "audit_event")
 public class AuditEvent {
+    @Id
+    @Column(length = 36)
     private String id;
 
+    @Column(name = "ts", nullable = false)
     private Instant timeStamp;
 
+    @Column(name = "user_id", length = 128)
     private String userId;
 
+    @Column(name = "store_id", length = 128)
     private String storeId;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 32)
     private AuditAction action;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 16)
     private AuditStatus status;
 
+    @Column(length = 8)
     private String method;
 
+    @Column(length = 512)
     private String path;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 16)
     private AuditService service;
 
     public AuditEvent() {

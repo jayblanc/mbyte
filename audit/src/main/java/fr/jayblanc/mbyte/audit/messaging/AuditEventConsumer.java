@@ -14,11 +14,21 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package fr.jayblanc.mbyte.store.audit;
+package fr.jayblanc.mbyte.audit.messaging;
 
-import fr.jayblanc.mbyte.store.audit.entity.AuditEvent;
-import java.util.List;
+import fr.jayblanc.mbyte.audit.model.AuditEvent;
+import fr.jayblanc.mbyte.audit.service.AuditPersistenceService;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import org.eclipse.microprofile.reactive.messaging.Incoming;
 
-public interface AuditService {
-    void save(AuditEvent auditEvent);
+@ApplicationScoped
+public class AuditEventConsumer {
+
+    @Inject AuditPersistenceService auditService;
+
+    @Incoming("audit-events")
+    public void consume(AuditEvent event) {
+        auditService.save(event);
+    }
 }
