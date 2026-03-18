@@ -32,7 +32,7 @@ public class AuditResource {
     AuditService auditService;
 
     @GET
-    // @RolesAllowed("admin")
+    @RolesAllowed("admin")
     public List<AuditEvent> list(@QueryParam("limit") @DefaultValue("100") int limit) {
         if (limit > 500) limit = 500;
         return auditService.list(limit);
