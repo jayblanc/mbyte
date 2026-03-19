@@ -14,20 +14,15 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package fr.jayblanc.mbyte.store.notification.entity;
+package fr.jayblanc.mbyte.manager.api.dto;
 
-import java.util.UUID;
-
-public class Event {
+public class StoreEventDto {
 
     private String id;
     private long timestamp;
     private String owner;
     private String eventType;
     private String sourceId;
-
-    public Event() {
-    }
 
     public String getId() {
         return id;
@@ -37,12 +32,12 @@ public class Event {
         this.id = id;
     }
 
-    public void setTimestamp(long timestamp) {
-        this.timestamp = timestamp;
-    }
-
     public long getTimestamp() {
         return timestamp;
+    }
+
+    public void setTimestamp(long timestamp) {
+        this.timestamp = timestamp;
     }
 
     public String getOwner() {
@@ -53,39 +48,25 @@ public class Event {
         this.owner = owner;
     }
 
-    public void setEventType(String eventType) {
-        this.eventType = eventType;
-    }
-
     public String getEventType() {
         return eventType;
     }
 
-    public void setSourceId(String sourceId) {
-        this.sourceId = sourceId;
+    public void setEventType(String eventType) {
+        this.eventType = eventType;
     }
 
     public String getSourceId() {
         return sourceId;
     }
 
-    public static Event build(String type, String sourceId) {
-        return build(null, type, sourceId);
-    }
-
-    public static Event build(String owner, String type, String sourceId) {
-        Event event = new Event();
-        event.setId(UUID.randomUUID().toString());
-        event.setTimestamp(System.currentTimeMillis());
-        event.setOwner(owner);
-        event.setEventType(type);
-        event.setSourceId(sourceId);
-        return event;
+    public void setSourceId(String sourceId) {
+        this.sourceId = sourceId;
     }
 
     @Override
     public String toString() {
-        return "Event{" +
+        return "StoreEventDto{" +
                 "id='" + id + '\'' +
                 ", timestamp=" + timestamp +
                 ", owner='" + owner + '\'' +
@@ -93,5 +74,4 @@ public class Event {
                 ", sourceId='" + sourceId + '\'' +
                 '}';
     }
-
 }

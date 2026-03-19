@@ -34,6 +34,10 @@ export function SideBar({ narrow }: SideBarProps) {
           Dashboard
         </SidebarNavItem>
 
+          <SidebarNavItem to="/webhooks" icon={<DashboardIcon size={narrow ? 'lg' : undefined} />} compact={narrow}>
+              Webhooks
+          </SidebarNavItem>
+
         {hasStore && (
           <SidebarNavItem to="/s/0/" icon={<StoreIcon size={narrow ? 'lg' : undefined} />} compact={narrow}>
             Store

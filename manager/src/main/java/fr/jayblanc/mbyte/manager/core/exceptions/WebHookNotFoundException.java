@@ -14,14 +14,13 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package fr.jayblanc.mbyte.store.notification;
+package fr.jayblanc.mbyte.manager.core.exceptions;
 
-public interface NotificationService {
-
-    String NOTIFICATION_TOPIC = "notification";
-
-    void notify(String type, String source) throws NotificationServiceException;
-
-    void notify(String owner, String type, String source) throws NotificationServiceException;
-
+/**
+ * @author Jerome Blanchard
+ */
+public class WebHookNotFoundException extends Exception {
+    public WebHookNotFoundException(String s) {
+        super(s);
+    }
 }

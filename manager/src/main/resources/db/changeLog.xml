@@ -80,4 +80,62 @@
         </createTable>
     </changeSet>
 
+    <changeSet id="2" author="thomas/hugo">
+        <createTable tableName="webhooks">
+            <column name="id" type="varchar(50)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="user_id" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="url" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="secret" type="varchar(255)"/>
+            <column name="active" type="boolean" defaultValueBoolean="true"/>
+        </createTable>
+
+        <addForeignKeyConstraint baseTableName="webhooks"
+                                 baseColumnNames="user_id"
+                                 referencedTableName="profile"
+                                 referencedColumnNames="id"
+                                 constraintName="fk_webhook_user"/>
+
+        <createTable tableName="webhooks_events">
+            <column name="webhook_id" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="event" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint baseTableName="webhooks_events"
+                                 baseColumnNames="webhook_id"
+                                 referencedTableName="webhooks"
+                                 referencedColumnNames="id"
+                                 onDelete="CASCADE"
+                                 constraintName="fk_webhook_events_parent"/>
+
+        <createTable tableName="webhooks_logs">
+            <column name="id" type="varchar(50)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="webhook_id" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="event_type" type="varchar(50)"/>
+            <column name="timestamp" type="bigint"/> <column name="payload" type="clob"/>
+            <column name="response_status" type="varchar(10)"/>
+            <column name="response_body" type="clob"/>
+        </createTable>
+
+        <addForeignKeyConstraint baseTableName="webhooks_logs"
+                                 baseColumnNames="webhook_id"
+                                 referencedTableName="webhooks"
+                                 referencedColumnNames="id"
+                                 onDelete="CASCADE"
+                                 constraintName="fk_webhook_logs_parent"/>
+    </changeSet>
+
 </databaseChangeLog>

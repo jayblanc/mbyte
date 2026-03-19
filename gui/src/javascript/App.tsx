@@ -9,6 +9,7 @@ import {StorePage} from './pages/StorePage'
 import {Header, SideBar} from './components'
 import {CToast, CToastBody, CToastHeader,} from '@coreui/react'
 import {useWebSocket} from './utils/useWebSocket'
+import WebhooksPage from "./components/webhook/WebhooksManagement.tsx";
 
 export default function App() {
   const { t } = useTranslation()
@@ -58,6 +59,9 @@ export default function App() {
                   <StorePage />
                 }
               />
+              <Route path="/webhooks" element={
+                <WebhooksPage/>
+              }/>
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
 
