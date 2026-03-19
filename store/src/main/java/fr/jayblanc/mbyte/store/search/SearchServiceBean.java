@@ -17,6 +17,7 @@
 package fr.jayblanc.mbyte.store.search;
 
 import fr.jayblanc.mbyte.store.auth.AuthenticationService;
+import fr.jayblanc.mbyte.store.index.IndexStoreConversationResult;
 import fr.jayblanc.mbyte.store.index.IndexStoreException;
 import fr.jayblanc.mbyte.store.index.IndexStoreResult;
 import fr.jayblanc.mbyte.store.index.IndexStoreService;
@@ -26,6 +27,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
+import java.io.InputStream;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -53,6 +55,33 @@ public class SearchServiceBean implements SearchService {
             }).collect(Collectors.toList());
         } catch (IndexStoreException e ) {
             throw new SearchServiceException("Error while searching query", e);
+        }
+    }
+
+    @Override
+    @GenerateMetric(key = "search.conversation", type = GenerateMetric.Type.INCREMENT)
+    @Transactional(Transactional.TxType.SUPPORTS)
+    public SearchConversationResult converse(String query, String conversationId) throws SearchServiceException {
+        LOGGER.log(Level.FINE, "Conversational search for query: " + query);
+        try {
+            String scope = (auth.getConnectedProfile().isOwner()) ? IndexableContent.Scope.PRIVATE.name() : IndexableContent.Scope.PUBLIC.name();
+            IndexStoreConversationResult result = index.converse(scope, query, conversationId);
+            return SearchConversationResult.fromIndexStoreResult(result);
+        } catch (IndexStoreException e) {
+            throw new SearchServiceException("Error while running conversational search", e);
+        }
+    }
+
+    @Override
+    @GenerateMetric(key = "search.conversation.stream", type = GenerateMetric.Type.INCREMENT)
+    @Transactional(Transactional.TxType.SUPPORTS)
+    public InputStream streamConversation(String query, String conversationId) throws SearchServiceException {
+        LOGGER.log(Level.FINE, "Conversational stream for query: " + query);
+        try {
+            String scope = (auth.getConnectedProfile().isOwner()) ? IndexableContent.Scope.PRIVATE.name() : IndexableContent.Scope.PUBLIC.name();
+            return index.converseStream(scope, query, conversationId);
+        } catch (IndexStoreException e) {
+            throw new SearchServiceException("Error while streaming conversational search", e);
         }
     }
 

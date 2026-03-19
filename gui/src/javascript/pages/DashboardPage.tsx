@@ -65,6 +65,10 @@ export function DashboardPage({ onNotify }: DashboardPageProps) {
                   <DetailStoreCard
                     app={storeApp}
                     onRefresh={() => reloadStatus()}
+                    onDeleted={() => {
+                      void reloadStatus()
+                      onNotify(t('dashboard.storeDeleted'))
+                    }}
                   />
                 </div>
               </CCol>

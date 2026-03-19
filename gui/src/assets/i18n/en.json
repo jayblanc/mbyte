@@ -45,10 +45,13 @@
       "running": "Running…",
       "loadingCommands": "Loading commands…",
       "noCommands": "No available commands",
-      "availableCommands": "Available commands"
+      "availableCommands": "Available commands",
+      "delete": "Delete store",
+      "deleting": "Deleting…"
     },
     "storeCreated": "Store created",
-    "storeCreationFailed": "Failed to create store"
+    "storeCreationFailed": "Failed to create store",
+    "storeDeleted": "Store deleted"
   },
   "commands": {
     "START": {

@@ -255,3 +255,128 @@
   --cui-btn-bg: rgba(0, 0, 0, 0.06);
   --cui-btn-border-color: rgba(0, 0, 0, 0.45);
 }
+
+.mbyte-ai-chat {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 1200;
+  width: 60px;
+  height: 60px;
+  transition: width 220ms ease, height 220ms ease;
+}
+
+.mbyte-ai-chat--open {
+  width: min(380px, calc(100vw - 24px));
+  height: min(560px, calc(100vh - 32px));
+}
+
+.mbyte-ai-chat__fab {
+  width: 60px;
+  height: 60px;
+  border: 0;
+  border-radius: 999px;
+  background: #23b7e5;
+  color: #fff;
+  font-size: 1.5rem;
+  box-shadow: 0 10px 24px rgba(35, 183, 229, 0.35);
+}
+
+.mbyte-ai-chat__panel {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 18px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.16);
+  overflow: hidden;
+}
+
+.mbyte-ai-chat__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.mbyte-ai-chat__title {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.mbyte-ai-chat__messages {
+  padding: 12px;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: linear-gradient(180deg, #fbfcff 0%, #f4f7fb 100%);
+}
+
+.mbyte-ai-chat__empty {
+  color: rgba(0, 0, 0, 0.55);
+  font-size: 0.875rem;
+}
+
+.mbyte-ai-chat__message {
+  padding: 10px 12px;
+  border-radius: 12px;
+  line-height: 1.4;
+  white-space: pre-wrap;
+}
+
+.mbyte-ai-chat__message--user {
+  align-self: flex-end;
+  background: #23b7e5;
+  color: #fff;
+  max-width: 85%;
+}
+
+.mbyte-ai-chat__message--assistant {
+  align-self: flex-start;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  max-width: 95%;
+}
+
+.mbyte-ai-chat__typing,
+.mbyte-ai-chat__error {
+  font-size: 0.8rem;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.mbyte-ai-chat__error {
+  color: #b42318;
+}
+
+.mbyte-ai-chat__input {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  padding: 10px;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.mbyte-ai-chat__input textarea {
+  resize: none;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+  padding: 8px 10px;
+  font-size: 0.9rem;
+  line-height: 1.35;
+}
+
+@media (max-width: 640px) {
+  .mbyte-ai-chat {
+    right: 12px;
+    bottom: 12px;
+  }
+  .mbyte-ai-chat--open {
+    width: calc(100vw - 24px);
+    height: min(70vh, 560px);
+  }
+}

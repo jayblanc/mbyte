@@ -14,17 +14,26 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package fr.jayblanc.mbyte.store.search;
+package fr.jayblanc.mbyte.store.api.dto;
 
-import java.io.InputStream;
-import java.util.List;
+public class SearchConversationRequest {
 
-public interface SearchService {
+    private String query;
+    private String conversationId;
 
-    List<SearchResult> search(String query) throws SearchServiceException;
+    public String getQuery() {
+        return query;
+    }
 
-    SearchConversationResult converse(String query, String conversationId) throws SearchServiceException;
+    public void setQuery(String query) {
+        this.query = query;
+    }
 
-    InputStream streamConversation(String query, String conversationId) throws SearchServiceException;
+    public String getConversationId() {
+        return conversationId;
+    }
 
+    public void setConversationId(String conversationId) {
+        this.conversationId = conversationId;
+    }
 }

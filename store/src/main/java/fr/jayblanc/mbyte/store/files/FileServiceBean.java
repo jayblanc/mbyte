@@ -37,6 +37,7 @@ import jakarta.persistence.PersistenceException;
 import jakarta.transaction.Transactional;
 
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -262,11 +263,44 @@ public class FileServiceBean implements FileService, IndexableContentProvider {
             if (node.isFolder()) {
                 content.setContent(node.getName() + " " + node.getMimetype());
             } else {
-                content.setContent(node.getName() + " " + node.getMimetype() + " " + datastore.extract(node.getContent(), node.getName(), node.getMimetype()));
+                String extracted = datastore.extract(node.getContent(), node.getName(), node.getMimetype());
+                if ((extracted == null || extracted.isBlank()) && isTextLike(node.getMimetype())) {
+                    extracted = extractRawTextPreview(node.getContent());
+                }
+                content.setContent(node.getName() + " " + node.getMimetype() + " " + (extracted == null ? "" : extracted));
             }
         } catch (Exception e) {
             LOGGER.log(Level.WARNING, "Error while extracting indexable content for node with id: " + id);
         }
         return content;
+    }
+
+    private boolean isTextLike(String mimetype) {
+        if (mimetype == null) {
+            return false;
+        }
+        String mt = mimetype.toLowerCase();
+        return mt.startsWith("text/")
+                || mt.contains("xml")
+                || mt.contains("json")
+                || mt.contains("yaml")
+                || mt.contains("csv")
+                || mt.contains("javascript");
+    }
+
+    private String extractRawTextPreview(String key) {
+        try (InputStream is = datastore.get(key)) {
+            byte[] bytes = is.readAllBytes();
+            String raw = new String(bytes, StandardCharsets.UTF_8)
+                    .replaceAll("\\s+", " ")
+                    .trim();
+            if (raw.length() > 20000) {
+                return raw.substring(0, 20000);
+            }
+            return raw;
+        } catch (Exception e) {
+            LOGGER.log(Level.FINE, "Fallback raw text extraction failed for key: " + key, e);
+            return "";
+        }
     }
 }

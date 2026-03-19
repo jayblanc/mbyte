@@ -45,10 +45,13 @@
       "running": "En cours…",
       "loadingCommands": "Chargement des commandes…",
       "noCommands": "Aucune commande disponible",
-      "availableCommands": "Commandes disponibles"
+      "availableCommands": "Commandes disponibles",
+      "delete": "Supprimer la boutique",
+      "deleting": "Suppression…"
     },
     "storeCreated": "Boutique créée",
-    "storeCreationFailed": "Échec de la création de la boutique"
+    "storeCreationFailed": "Échec de la création de la boutique",
+    "storeDeleted": "Boutique supprimée"
   },
   "commands": {
     "START": {

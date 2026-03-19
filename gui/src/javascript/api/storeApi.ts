@@ -230,6 +230,76 @@ export function createStoreApi(tokenProvider: TokenProvider, options: CreateStor
       const arr = (await readJsonOrThrow(res)) as any[]
       return (arr || []).map((d: any) => SearchResult.fromDto(d))
     },
+
+    async streamConversation(
+      query: string,
+      conversationId: string | null,
+      onChunk: (chunk: string) => void,
+      onConversationId?: (id: string) => void,
+    ): Promise<void> {
+      if (!baseUrl) throw new Error('Store base URL is not configured')
+      const res = await fetchWithAuth(
+        tokenProvider,
+        '/api/search/conversation/stream',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query, conversationId }),
+        },
+        baseUrl,
+      )
+      if (!res.ok || !res.body) {
+        const text = await res.text()
+        throw new Error(`Conversation stream failed (${res.status}): ${text}`)
+      }
+
+      const reader = res.body.getReader()
+      const decoder = new TextDecoder('utf-8')
+      let buffer = ''
+      const consumePayload = (payloadRaw: string) => {
+        if (!payloadRaw || payloadRaw === '[DONE]') return
+        try {
+          const payload = JSON.parse(payloadRaw)
+          const conversation = payload?.conversation
+          const message = conversation?.message ?? conversation?.answer
+          if (typeof message === 'string' && message.length > 0) {
+            onChunk(message)
+          }
+          if (typeof conversation?.conversation_id === 'string' && conversation.conversation_id.length > 0) {
+            onConversationId?.(conversation.conversation_id)
+          }
+        } catch {
+          // Ignore malformed chunks.
+        }
+      }
+      const consumeEvent = (eventText: string) => {
+        const text = eventText.trim()
+        if (!text) return
+        const dataLines = text
+          .split(/\r?\n/)
+          .filter((line) => line.startsWith('data:'))
+          .map((line) => line.slice(5).trim())
+        if (dataLines.length) {
+          consumePayload(dataLines.join('\n'))
+          return
+        }
+        // Typesense may return plain JSON instead of SSE-framed events.
+        consumePayload(text)
+      }
+
+      while (true) {
+        const { value, done } = await reader.read()
+        if (done) break
+        buffer += decoder.decode(value, { stream: true })
+        const events = buffer.split(/\r?\n\r?\n/)
+        buffer = events.pop() ?? ''
+        for (const event of events) {
+          consumeEvent(event)
+        }
+      }
+      // Parse remaining buffer for non-SSE single-payload responses.
+      consumeEvent(buffer)
+    },
   }
 }
 

@@ -70,6 +70,26 @@ services:
       mbyte.fr:
         ipv4_address: 172.25.0.9
 
+  vllm:
+    image: vllm/vllm-openai:latest
+    hostname: vllm
+    container_name: mbyte.vllm
+    command:
+      - "--model=Qwen/Qwen2.5-1.5B-Instruct"
+      - "--served-model-name=Qwen2.5-3B-Instruct"
+      - "--gpu-memory-utilization=0.75"
+      - "--max-model-len=4096"
+      - "--host=0.0.0.0"
+      - "--port=8000"
+    environment:
+      - HUGGING_FACE_HUB_TOKEN={$HUGGING_FACE_HUB_TOKEN}
+    volumes:
+      - mbyte.vllm.hf:/root/.cache/huggingface
+    gpus: all
+    networks:
+      mbyte.fr:
+        ipv4_address: 172.25.0.10
+
   keycloak:
     build:
       context: .
@@ -122,6 +142,7 @@ services:
     depends_on:
       - db
       - typesense
+      - vllm
       - traefik
       - keycloak
     group_add:
@@ -200,3 +221,5 @@ volumes:
       device: /var/mbyte/db
   mbyte.typesense.data:
     name: mbyte.fr.typesense.data
+  mbyte.vllm.hf:
+    name: mbyte.fr.vllm.hf

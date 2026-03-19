@@ -18,6 +18,8 @@ package fr.jayblanc.mbyte.store.index;
 
 import io.smallrye.config.ConfigMapping;
 
+import java.util.Optional;
+
 /**
  * @author Jerome Blanchard
  */
@@ -44,5 +46,25 @@ public interface IndexStoreConfig {
         String apiKey();
         String collection();
         String storeId();
+        Embedding embedding();
+        Conversation conversation();
+    }
+
+    interface Embedding {
+        String field();
+        String modelName();
+    }
+
+    interface Conversation {
+        boolean enabled();
+        String historyCollection();
+        String modelId();
+        String modelName();
+        String vllmUrl();
+        Optional<String> apiKey();
+        String systemPrompt();
+        int ttlSeconds();
+        int maxBytes();
+        int perPage();
     }
 }

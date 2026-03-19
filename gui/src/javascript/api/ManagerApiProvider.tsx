@@ -14,6 +14,7 @@ export type ManagerApi = {
   listApps(owner?: string): Promise<Application[]>
   getApp(appId: string): Promise<Application>
   createApp(type: string, name: string): Promise<string>
+  deleteApp(appId: string): Promise<void>
   getAppProcs(appId: string, active: boolean): Promise<Process[]>
   listAppCommands(appId: string): Promise<CommandDescriptor[]>
   runAppCommand(appId: string, commandName: string): Promise<string>

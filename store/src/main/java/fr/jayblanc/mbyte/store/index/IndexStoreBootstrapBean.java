@@ -46,6 +46,11 @@ public class IndexStoreBootstrapBean {
             return;
         }
         List<Node> nodes = em.createNamedQuery("Node.findAll", Node.class).getResultList();
+        try {
+            index.clearStoreDocuments();
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "Unable to purge existing Typesense documents before reindex", e);
+        }
         LOGGER.log(Level.INFO, "Reindexing {0} node(s) into Typesense", nodes.size());
         int indexed = 0;
         for (Node node : nodes) {

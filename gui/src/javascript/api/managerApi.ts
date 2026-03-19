@@ -78,6 +78,16 @@ export function createManagerApi(tokenProvider: TokenProvider) {
       return (await readJsonOrThrow(res)) as Application
     },
 
+    /** Deletes an application (DELETE /api/apps/{id}). Idempotent on backend. */
+    async deleteApp(appId: string): Promise<void> {
+      const base = requireBaseUrl()
+      const res = await fetchWithAuth(tokenProvider, `/api/apps/${encodeURIComponent(appId)}`, { method: 'DELETE' }, base)
+      if (!res.ok && res.status !== 404) {
+        const text = await res.text()
+        throw new Error(`Delete failed (${res.status}): ${text}`)
+      }
+    },
+
     /** Creates an application (POST /api/apps). Returns created id. */
     async createApp(type: string, name: string): Promise<string> {
       const base = requireBaseUrl()

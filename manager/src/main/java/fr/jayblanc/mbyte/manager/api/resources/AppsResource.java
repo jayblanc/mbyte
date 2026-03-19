@@ -70,6 +70,20 @@ public class AppsResource {
         return core.getApp(id);
     }
 
+    @DELETE
+    @Path("{id}")
+    public Response deleteApp(@PathParam("id") String id) throws NotificationServiceException {
+        LOGGER.log(Level.INFO, "DELETE /api/apps/{0}", id);
+        try {
+            core.dropApp(id);
+        } catch (ApplicationNotFoundException e) {
+            LOGGER.log(Level.INFO, "Application already deleted: {0}", id);
+        } catch (CoreServiceException e) {
+            throw new WebApplicationException("Unable to delete application " + id, e, Response.Status.INTERNAL_SERVER_ERROR);
+        }
+        return Response.noContent().build();
+    }
+
     @GET
     @Path("{id}/commands")
     @Produces(MediaType.APPLICATION_JSON)

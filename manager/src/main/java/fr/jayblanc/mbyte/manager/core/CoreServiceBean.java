@@ -16,7 +16,12 @@
  */
 package fr.jayblanc.mbyte.manager.core;
 
+import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.command.InspectVolumeResponse;
+import com.github.dockerjava.api.exception.NotFoundException;
+import com.github.dockerjava.api.model.Container;
 import fr.jayblanc.mbyte.manager.auth.AuthenticationService;
+import fr.jayblanc.mbyte.manager.core.descriptor.DockerStoreDescriptor;
 import fr.jayblanc.mbyte.manager.core.entity.Application;
 import fr.jayblanc.mbyte.manager.core.entity.Environment;
 import fr.jayblanc.mbyte.manager.core.entity.EnvironmentEntry;
@@ -54,6 +59,7 @@ public class CoreServiceBean implements CoreService, CoreServiceAdmin {
     @Inject TopologyService topology;
     @Inject CoreConfig config;
     @Inject EntityManager em;
+    @Inject DockerClient docker;
 
     @Override
     @Transactional(Transactional.TxType.REQUIRED)
@@ -176,6 +182,13 @@ public class CoreServiceBean implements CoreService, CoreServiceAdmin {
     public void dropApp(String id) throws ApplicationNotFoundException, NotificationServiceException {
         LOGGER.log(Level.INFO, "Dropping application for id: {0}", id);
         Application application  = findAppById(id);
+        Environment env = findEnvByAppOrNull(application.getId());
+        if ("DOCKER_STORE".equals(application.getType()) && env != null) {
+            cleanupDockerStore(env, application.getId());
+        }
+        if (env != null) {
+            em.remove(env);
+        }
         em.remove(application);
         notification.notify(application.getOwner(), Event.TYPE_APP_DELETED, application.getId(),
                 "Application deleted with id: " + application.getId(),
@@ -210,6 +223,70 @@ public class CoreServiceBean implements CoreService, CoreServiceAdmin {
             LOGGER.log(Level.WARNING, "Multiple environments found for app with id: {}, returning the first one", appId);
         }
         return envs.getFirst();
+    }
+
+    private Environment findEnvByAppOrNull(String appId) {
+        List<Environment> envs = em.createNamedQuery("Environment.findByApp", Environment.class).setParameter("app", appId).getResultList();
+        if (envs == null || envs.isEmpty()) {
+            return null;
+        }
+        return envs.getFirst();
+    }
+
+    private void cleanupDockerStore(Environment env, String appId) {
+        LOGGER.log(Level.INFO, "Best-effort cleanup for Docker store app: {0}", appId);
+        try {
+            removeContainerByName(readEnvValue(env, DockerStoreDescriptor.EnvKey.STORE_CONTAINER_NAME.name()));
+            removeContainerByName(readEnvValue(env, DockerStoreDescriptor.EnvKey.STORE_DB_CONTAINER_NAME.name()));
+            removeVolumeByName(readEnvValue(env, DockerStoreDescriptor.EnvKey.STORE_VOLUME_NAME.name()));
+            removeVolumeByName(readEnvValue(env, DockerStoreDescriptor.EnvKey.STORE_DB_VOLUME_NAME.name()));
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "Docker cleanup failed for app " + appId + ", proceeding with metadata deletion", e);
+        }
+    }
+
+    private void removeContainerByName(String containerName) {
+        if (containerName == null || containerName.isBlank()) {
+            return;
+        }
+        List<Container> containers = docker.listContainersCmd().withShowAll(true).withNameFilter(List.of(containerName)).exec();
+        for (Container container : containers) {
+            boolean nameMatch = container.getNames() != null
+                    && List.of(container.getNames()).contains("/" + containerName);
+            if (!nameMatch) {
+                continue;
+            }
+            try {
+                docker.removeContainerCmd(container.getId()).withForce(true).exec();
+                LOGGER.log(Level.INFO, "Removed Docker container ''{0}'' (id={1})", new Object[]{containerName, container.getId()});
+            } catch (NotFoundException ignored) {
+                LOGGER.log(Level.FINE, "Container already removed: {0}", containerName);
+            }
+        }
+    }
+
+    private void removeVolumeByName(String volumeName) {
+        if (volumeName == null || volumeName.isBlank()) {
+            return;
+        }
+        List<InspectVolumeResponse> volumes = docker.listVolumesCmd().exec().getVolumes();
+        if (volumes == null || volumes.stream().noneMatch(v -> volumeName.equals(v.getName()))) {
+            return;
+        }
+        try {
+            docker.removeVolumeCmd(volumeName).exec();
+            LOGGER.log(Level.INFO, "Removed Docker volume ''{0}''", volumeName);
+        } catch (NotFoundException ignored) {
+            LOGGER.log(Level.FINE, "Volume already removed: {0}", volumeName);
+        }
+    }
+
+    private String readEnvValue(Environment env, String key) {
+        EnvironmentEntry entry = env.get(key);
+        if (entry == null || entry.getValue() == null) {
+            return null;
+        }
+        return String.valueOf(entry.getValue());
     }
 
     private Application findAppById(String id) throws ApplicationNotFoundException {

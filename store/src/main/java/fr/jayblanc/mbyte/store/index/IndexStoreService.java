@@ -16,14 +16,21 @@
  */
 package fr.jayblanc.mbyte.store.index;
 
+import java.io.InputStream;
 import java.util.List;
 
 public interface IndexStoreService {
+
+    void clearStoreDocuments() throws IndexStoreException;
 
     void index(IndexableContent object) throws IndexStoreException;
 
     void remove(String identifier) throws IndexStoreException;
 
     List<IndexStoreResult> search(String scope, String query) throws IndexStoreException;
+
+    IndexStoreConversationResult converse(String scope, String query, String conversationId) throws IndexStoreException;
+
+    InputStream converseStream(String scope, String query, String conversationId) throws IndexStoreException;
 
 }

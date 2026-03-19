@@ -12,9 +12,10 @@ import { useManagerApi } from '../../api/ManagerApiProvider'
 export type DetailStoreCardProps = Readonly<{
   app: Application
   onRefresh: () => void
+  onDeleted?: () => void
 }>
 
-export function DetailStoreCard({ app, onRefresh }: DetailStoreCardProps) {
+export function DetailStoreCard({ app, onRefresh, onDeleted }: DetailStoreCardProps) {
   const { t } = useTranslation()
   const commandProcessing = useAppCommandProcessing(app.id)
   const managerApi = useManagerApi()
@@ -22,6 +23,8 @@ export function DetailStoreCard({ app, onRefresh }: DetailStoreCardProps) {
   const [commands, setCommands] = useState<CommandDescriptor[] | null>(null)
   const [commandsError, setCommandsError] = useState<string | null>(null)
   const [commandsLoading, setCommandsLoading] = useState(false)
+  const [deleteBusy, setDeleteBusy] = useState(false)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -81,6 +84,20 @@ export function DetailStoreCard({ app, onRefresh }: DetailStoreCardProps) {
     void commandProcessing.runCommand(app.id, commandName)
   }
 
+  const handleDeleteStore = async () => {
+    try {
+      setDeleteBusy(true)
+      setDeleteError(null)
+      await managerApi.deleteApp(app.id)
+      onDeleted?.()
+    } catch (err) {
+      console.error('Failed to delete store:', err)
+      setDeleteError(err instanceof Error ? err.message : String(err))
+    } finally {
+      setDeleteBusy(false)
+    }
+  }
+
   return (
     <CCard>
       <CCardHeader className="d-flex justify-content-between align-items-center">
@@ -92,6 +109,7 @@ export function DetailStoreCard({ app, onRefresh }: DetailStoreCardProps) {
           color="light"
           size="sm"
           onClick={onRefresh}
+          disabled={deleteBusy}
           title={t('dashboard.storeDetail.refresh')}
         >
           <CIcon icon={cilReload} />
@@ -135,6 +153,12 @@ export function DetailStoreCard({ app, onRefresh }: DetailStoreCardProps) {
           </div>
         )}
 
+        {deleteError && (
+          <div className="mb-3 text-danger">
+            {deleteError}
+          </div>
+        )}
+
         <div>
           {commandsLoading && (
             <div className="d-flex align-items-center gap-2">
@@ -152,11 +176,11 @@ export function DetailStoreCard({ app, onRefresh }: DetailStoreCardProps) {
           )}
 
           {commands?.length ? (
-            <div className="d-flex flex-wrap gap-2">
+            <div className="d-flex flex-wrap gap-2 align-items-center">
               {commands.map((cmd) => {
                 const appStatus = app.status ?? ''
                 const allowedForStatus = !cmd.appStatus || cmd.appStatus.includes(appStatus)
-                const disabled = commandProcessing.phase !== 'idle' || !allowedForStatus
+                const disabled = deleteBusy || commandProcessing.phase !== 'idle' || !allowedForStatus
                 const btnStyle = allowedForStatus ? undefined : { opacity: 0.5 }
                 return (
                   cmd.description ? (
@@ -190,6 +214,14 @@ export function DetailStoreCard({ app, onRefresh }: DetailStoreCardProps) {
                   )
                 )
               })}
+              <CButton
+                color="outline-danger"
+                size="sm"
+                onClick={handleDeleteStore}
+                disabled={deleteBusy || commandProcessing.phase !== 'idle'}
+              >
+                {deleteBusy ? t('dashboard.storeDetail.deleting') : t('dashboard.storeDetail.delete')}
+              </CButton>
             </div>
           ) : null}
         </div>

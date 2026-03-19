@@ -90,6 +90,17 @@ public class CreateDockerStoreTask extends Task {
                             "STORE.INDEX.TYPESENSE.API-KEY=change-me-typesense-key",
                             "STORE.INDEX.TYPESENSE.COLLECTION=store_nodes",
                             "STORE.INDEX.TYPESENSE.STORE-ID=" + storeOwner,
+                            "STORE.INDEX.TYPESENSE.EMBEDDING.FIELD=embedding",
+                            "STORE.INDEX.TYPESENSE.EMBEDDING.MODEL-NAME=ts/all-MiniLM-L12-v2",
+                            "STORE.INDEX.TYPESENSE.CONVERSATION.ENABLED=true",
+                            "STORE.INDEX.TYPESENSE.CONVERSATION.HISTORY-COLLECTION=conversation_store",
+                            "STORE.INDEX.TYPESENSE.CONVERSATION.MODEL-ID=store-rag",
+                            "STORE.INDEX.TYPESENSE.CONVERSATION.MODEL-NAME=vllm/Qwen2.5-3B-Instruct",
+                            "STORE.INDEX.TYPESENSE.CONVERSATION.VLLM-URL=http://vllm:8000",
+                            "STORE.INDEX.TYPESENSE.CONVERSATION.SYSTEM-PROMPT=You are an assistant for mbyte file search. Answer only from the provided context. If the context is insufficient, say you do not know.",
+                            "STORE.INDEX.TYPESENSE.CONVERSATION.TTL-SECONDS=86400",
+                            "STORE.INDEX.TYPESENSE.CONVERSATION.MAX-BYTES=16384",
+                            "STORE.INDEX.TYPESENSE.CONVERSATION.PER-PAGE=20",
                             "STORE.TOPOLOGY.ENABLED=" + storeTopologyEnabled,
                             "STORE.TOPOLOGY.HOST=consul",
                             "STORE.TOPOLOGY.PORT=8500",
@@ -145,6 +156,16 @@ public class CreateDockerStoreTask extends Task {
                     "STORE.INDEX.TYPESENSE.API-KEY=change-me-typesense-key",
                     "STORE.INDEX.TYPESENSE.COLLECTION=store_nodes",
                     "STORE.INDEX.TYPESENSE.STORE-ID=" + storeOwner,
+                    "STORE.INDEX.TYPESENSE.EMBEDDING.FIELD=embedding",
+                    "STORE.INDEX.TYPESENSE.EMBEDDING.MODEL-NAME=ts/all-MiniLM-L12-v2",
+                    "STORE.INDEX.TYPESENSE.CONVERSATION.ENABLED=true",
+                    "STORE.INDEX.TYPESENSE.CONVERSATION.HISTORY-COLLECTION=conversation_store",
+                    "STORE.INDEX.TYPESENSE.CONVERSATION.MODEL-ID=store-rag",
+                    "STORE.INDEX.TYPESENSE.CONVERSATION.VLLM-URL=http://vllm:8000",
+                    "STORE.INDEX.TYPESENSE.CONVERSATION.SYSTEM-PROMPT=You are an assistant for mbyte file search. Answer only from the provided context. If the context is insufficient, say you do not know.",
+                    "STORE.INDEX.TYPESENSE.CONVERSATION.TTL-SECONDS=86400",
+                    "STORE.INDEX.TYPESENSE.CONVERSATION.MAX-BYTES=16384",
+                    "STORE.INDEX.TYPESENSE.CONVERSATION.PER-PAGE=20",
                     "STORE.TOPOLOGY.ENABLED=" + storeTopologyEnabled,
                     "STORE.TOPOLOGY.HOST=consul",
                     "STORE.TOPOLOGY.PORT=8500",
@@ -153,7 +174,11 @@ public class CreateDockerStoreTask extends Task {
                     "QUARKUS.DATASOURCE.PASSWORD=" + dbPass,
                     "QUARKUS.DATASOURCE.JDBC.URL=jdbc:postgresql://" + dbContainerName + ":5432/" + dbName
             );
-            if (!new HashSet<>(envVars).containsAll(expectedEnv)) {
+            Set<String> envVarSet = new HashSet<>(envVars);
+            boolean hasConversationModelName =
+                    envVarSet.contains("STORE.INDEX.TYPESENSE.CONVERSATION.MODEL-NAME=vllm/Qwen2.5-3B-Instruct")
+                            || envVarSet.contains("STORE.INDEX.TYPESENSE.CONVERSATION.MODEL-NAME=vllm/Qwen/Qwen2.5-3B-Instruct");
+            if (!envVarSet.containsAll(expectedEnv) || !hasConversationModelName) {
                 this.fail("Existing container environment variables do not match expected");
                 throw new TaskException("Existing container environment variables do not match expected");
             }

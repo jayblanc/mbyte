@@ -4,6 +4,7 @@ import { NavigationBar } from '../components/store/NavigationBar'
 import { BrowserArea } from '../components/store/BrowserArea'
 import { InfoPanel } from '../components/store/InfoPanel'
 import { CreateModal } from '../components/store/CreateModal'
+import { StoreAiChat } from '../components/store/StoreAiChat'
 import Node from '../api/entities/Node'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useAccessToken } from '../auth/useAccessToken'
@@ -169,6 +170,15 @@ export function StorePage() {
 
   const handleSearch = useCallback((query: string) => storeApi.search(query), [storeApi])
   const handleSearchSelect = useCallback((id: string) => navigate(`/s/0/${id}`), [navigate])
+  const handleConversationStream = useCallback(
+    (
+      query: string,
+      conversationId: string | null,
+      onChunk: (chunk: string) => void,
+      onConversationId?: (id: string) => void,
+    ) => storeApi.streamConversation(query, conversationId, onChunk, onConversationId),
+    [storeApi],
+  )
 
   const handleView = async (n?: Node | null) => {
     if (!n) return
@@ -292,6 +302,8 @@ export function StorePage() {
           onClose={() => setShowCreateModal(false)}
         />
       )}
+
+      <StoreAiChat streamConversation={handleConversationStream} />
     </CContainer>
   )
 }
