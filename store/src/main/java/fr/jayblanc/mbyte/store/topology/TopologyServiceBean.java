@@ -57,7 +57,7 @@ public class TopologyServiceBean implements TopologyService {
             consulClient = Consul.builder().withHttps(config.https()).withHostAndPort(HostAndPort.fromParts(config.host(), config.port()))
                     .build();
             serviceName = "mbyte.store.".concat(config.service().name());
-            instanceId = serviceName.concat(".1");
+            instanceId = serviceName.concat(".0");
             Registration service = this.buildRegistration();
             consulClient.agentClient().register(service);
             try {

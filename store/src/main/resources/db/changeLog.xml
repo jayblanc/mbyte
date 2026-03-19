@@ -41,4 +41,21 @@
         </addColumn>
     </changeSet>
 
+
+    <changeSet id="add-store-quota" author="natha">
+        <createTable tableName="store_quota">
+            <column name="max_storage_bytes" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="max_memory_bytes" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <insert tableName="store_quota">
+            <column name="max_storage_bytes" valueNumeric="524288000"/>
+            <column name="max_memory_bytes" valueNumeric="268435456"/>
+        </insert>
+    </changeSet>
+
 </databaseChangeLog>

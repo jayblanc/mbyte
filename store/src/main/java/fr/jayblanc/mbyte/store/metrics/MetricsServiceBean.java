@@ -16,11 +16,15 @@
  */
 package fr.jayblanc.mbyte.store.metrics;
 
+import fr.jayblanc.mbyte.store.quota.StoreQuotaService;
 import io.quarkus.arc.Lock;
 import io.quarkus.runtime.Startup;
 import io.quarkus.scheduler.Scheduled;
+import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 
+import com.sun.management.OperatingSystemMXBean;
+import java.lang.management.ManagementFactory;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -34,6 +38,9 @@ public class MetricsServiceBean implements MetricsService {
 
     private static final Map<String, Long> metrics = new HashMap<>();
     private static final Map<String, Long> latestMetrics = new HashMap<>();
+
+    @Inject
+    StoreQuotaService quotaService;
 
     public MetricsServiceBean() {
     }
@@ -82,6 +89,14 @@ public class MetricsServiceBean implements MetricsService {
     public void razLatestMetrics() {
         LOGGER.log(Level.INFO, "reset latest metrics");
         latestMetrics.replaceAll((k, v) -> 0L);
+    }
+
+    public StoreMetrics getMetrics() {
+
+        long totalMemory = quotaService.getMaxMemory();
+        long totalStorage = quotaService.getMaxStorage();
+
+        return new StoreMetrics(totalStorage, totalMemory);
     }
 }
 

@@ -1,5 +1,5 @@
 import { CIcon } from '@coreui/icons-react'
-import { cilHome, cilStorage } from '@coreui/icons'
+import {cilHome, cilSettings, cilStorage} from '@coreui/icons'
 
 export type IconSize = 'sm' | 'lg' | 'xl'
 
@@ -9,4 +9,8 @@ export function DashboardIcon({ size }: { size?: IconSize } = {}) {
 
 export function StoreIcon({ size }: { size?: IconSize } = {}) {
   return <CIcon icon={cilStorage} size={size} />
+}
+
+export function ManageIcon({ size }: { size?: IconSize } = {}) {
+    return <CIcon icon={cilSettings} size={size} />
 }
