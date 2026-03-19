@@ -19,6 +19,8 @@ package fr.jayblanc.mbyte.manager.core;
 import io.smallrye.config.ConfigMapping;
 import io.smallrye.config.WithName;
 
+import java.util.Optional;
+
 /**
  * @author Jerome Blanchard
  */
@@ -30,6 +32,9 @@ public interface CoreConfig {
     @WithName("store")
     StoreConfig store();
 
+    @WithName("webhooks")
+    Optional<WebHooksConfig> webhooks();
+
     interface StoreConfig {
 
         String image();
@@ -37,6 +42,23 @@ public interface CoreConfig {
         String version();
 
         String domain();
+
+    }
+
+    interface WebHooksConfig {
+
+        @WithName("bridge")
+        Optional<BridgeConfig> bridge();
+
+        interface BridgeConfig {
+
+            @WithName("shared-secret")
+            Optional<String> sharedSecret();
+
+            @WithName("store-events-url")
+            Optional<String> storeEventsUrl();
+
+        }
 
     }
 

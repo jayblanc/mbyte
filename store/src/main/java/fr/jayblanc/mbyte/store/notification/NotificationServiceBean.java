@@ -44,9 +44,13 @@ public class NotificationServiceBean implements NotificationService {
     }
 
     @Override public void notify(String type, String source) throws NotificationServiceException {
+        notify(null, type, source);
+    }
+
+    @Override public void notify(String owner, String type, String source) throws NotificationServiceException {
         LOGGER.log(Level.INFO, "Throwing event of type: " + type);
         try {
-            events.add(Event.build(type, source));
+            events.add(Event.build(owner, type, source));
         } catch (Exception e) {
             throw new NotificationServiceException("Unable to throw event", e);
         }

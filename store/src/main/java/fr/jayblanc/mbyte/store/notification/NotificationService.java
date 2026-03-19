@@ -22,4 +22,6 @@ public interface NotificationService {
 
     void notify(String type, String source) throws NotificationServiceException;
 
+    void notify(String owner, String type, String source) throws NotificationServiceException;
+
 }

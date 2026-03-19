@@ -186,7 +186,8 @@ public class FileServiceBean implements FileService, IndexableContentProvider {
         em.persist(node);
         pnode.setSize(pnode.getSize()+1);
         pnode.setModification(node.getModification());
-        notification.notify("file.create", node.getId());
+        String owner = auth.getConnectedIdentifier();
+        notification.notify(owner, "file.create", node.getId());
         notification.notify("folder.update", pnode.getId());
         return node.getId();
     }

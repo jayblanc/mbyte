@@ -27,6 +27,7 @@ import fr.jayblanc.mbyte.manager.process.Task;
 import fr.jayblanc.mbyte.manager.process.TaskException;
 import jakarta.inject.Inject;
 import jakarta.transaction.TransactionScoped;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import java.util.*;
 
@@ -52,6 +53,12 @@ public class CreateDockerStoreTask extends Task {
 
     @Inject DockerClient client;
 
+    @ConfigProperty(name = "manager.webhooks.bridge.store-events-url", defaultValue = "http://manager:8080/api/internal/store-events")
+    String managerStoreEventsUrl;
+
+    @ConfigProperty(name = "manager.webhooks.bridge.shared-secret")
+    Optional<String> managerStoreBridgeSecret;
+
     @Override
     public String getTaskName() {
         return TASK_NAME;
@@ -71,6 +78,8 @@ public class CreateDockerStoreTask extends Task {
         String dbName = getMandatoryContextValue(STORE_DB_NAME);
         String dbUser = getMandatoryContextValue(STORE_DB_USER);
         String dbPass = getMandatoryContextValue(STORE_DB_PASSWORD);
+        boolean webHooksBridgeEnabled = managerStoreEventsUrl != null && !managerStoreEventsUrl.isBlank();
+        String storeBridgeSecret = managerStoreBridgeSecret.orElse("");
 
         Optional<Container> container = client.listContainersCmd().withShowAll(true).withNameFilter(List.of(containerName)).exec().stream()
                 .filter(c -> Arrays.asList(c.getNames()).contains("/" + containerName)).findFirst();
@@ -86,6 +95,9 @@ public class CreateDockerStoreTask extends Task {
                             "STORE.TOPOLOGY.HOST=consul",
                             "STORE.TOPOLOGY.PORT=8500",
                             "STORE.TOPOLOGY.SERVICE.HOST=" + storeFqdn,
+                            "STORE.WEBHOOKS.BRIDGE.ENABLED=" + webHooksBridgeEnabled,
+                            "STORE.WEBHOOKS.BRIDGE.MANAGER.URL=" + managerStoreEventsUrl,
+                            "STORE.WEBHOOKS.BRIDGE.SHARED.SECRET=" + storeBridgeSecret,
                             "QUARKUS.DATASOURCE.USERNAME=" + dbUser,
                             "QUARKUS.DATASOURCE.PASSWORD=" + dbPass,
                             "QUARKUS.DATASOURCE.JDBC.URL=jdbc:postgresql://" + dbContainerName + ":5432/" + dbName
