@@ -88,5 +88,39 @@
       "confirm": "Confirm",
       "cancel": "Cancel"
     }
+  },
+  "audit": {
+    "title": "Audit",
+    "limit": "Limit",
+    "pageSize": "Rows",
+    "searchPlaceholder": "Search user, action, method or path",
+    "refresh": "Refresh",
+    "loading": "Loading...",
+    "empty": "No audit events found.",
+    "notConfigured": "The store API is not configured for this profile.",
+    "totalFetched": "Fetched: {{count}}",
+    "totalDisplayed": "Displayed: {{count}}",
+    "columns": {
+      "timestamp": "Date",
+      "user": "User",
+      "action": "Action",
+      "status": "Status",
+      "method": "Method",
+      "path": "Path"
+    },
+    "filters": {
+      "button": "Filters",
+      "all": "All",
+      "status": "Status",
+      "method": "Method",
+      "action": "Action",
+      "clear": "Reset filters"
+    },
+    "pagination": {
+      "summary": "{{first}}-{{last}} of {{total}}",
+      "previous": "Previous",
+      "next": "Next",
+      "page": "Page {{page}} / {{totalPages}}"
+    }
   }
 }
