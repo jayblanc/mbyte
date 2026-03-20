@@ -45,6 +45,8 @@ public interface FileService {
 
     void remove(String parent, String name) throws NodeNotFoundException, NodeNotEmptyException, NodeTypeException, DataStoreException, NodePersistenceException, NotificationServiceException;
 
+    void flush();
+
     String getFullPath(List<Node> nodesPath);
 
     List<Node> findAll() throws NodeNotFoundException;

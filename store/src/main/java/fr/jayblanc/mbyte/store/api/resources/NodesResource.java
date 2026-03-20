@@ -148,6 +148,7 @@ public class NodesResource {
             NodeNotEmptyException, NodeNotFoundException, NodeTypeException, NodeAlreadyExistsException, DataStoreException, DataNotFoundException, NodePersistenceException, NotificationServiceException {
         LOGGER.log(Level.INFO, "PUT /api/nodes/{0}/{1}", new Object[]{id, name});
         service.remove(id, name);
+        service.flush();
         service.add(id, name, data);
         return Response.noContent().build();
     }

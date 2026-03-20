@@ -1,21 +1,34 @@
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, useCallback } from 'react'
 import { CContainer } from '@coreui/react'
 import { NavigationBar } from '../components/store/NavigationBar'
 import { BrowserArea } from '../components/store/BrowserArea'
 import { InfoPanel } from '../components/store/InfoPanel'
 import { CreateModal } from '../components/store/CreateModal'
+import { ConfirmUpdateModal } from '../components/store/ConfirmUpdateModal'
 import Node from '../api/entities/Node'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useAccessToken } from '../auth/useAccessToken'
 import { useStoreApi } from '../api/useStoreApi'
 import { useManagerStatus } from '../auth/useManagerStatus'
 import { apiConfig } from '../api/apiConfig'
+import { useProfile } from '../auth/useProfile'
+import { fetchWithAuth } from '../api/fetchWithAuth'
+import {
+  useAutoVersioning,
+  emitFileSaved,
+  emitVersionRestored,
+  VersionHistoryPanel,
+  RestoreConfirmModal,
+  FileVersion,
+  type FetchFn,
+} from '../versioning'
 
 type BreadcrumbItem = { id?: string, name: string }
 
 export function StorePage() {
   const [viewMode, setViewMode] = useState<'table' | 'grid'>('table')
   const [detailVisible, setDetailVisible] = useState(true)
+  const [historyVisible, setHistoryVisible] = useState(false)
   const [currentPath, setCurrentPath] = useState<BreadcrumbItem[]>([{ id: undefined, name: '/' }])
   const [nodes, setNodes] = useState<Node[]>([])
   const [selected, setSelected] = useState<Node | null>(null)
@@ -23,16 +36,29 @@ export function StorePage() {
   const [reloadKey, setReloadKey] = useState(0)
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [modalType, setModalType] = useState<'folder' | 'file'>('folder')
+  const [showRestoreModal, setShowRestoreModal] = useState(false)
+  const [versionToRestore, setVersionToRestore] = useState<FileVersion | null>(null)
+  const [showUpdateModal, setShowUpdateModal] = useState(false)
+  const [pendingFile, setPendingFile] = useState<{ file: File; parentId: string } | null>(null)
 
   const params = useParams()
   const navigate = useNavigate()
 
   const tokenProvider = useAccessToken()
   const { apps } = useManagerStatus()
+  const { profile } = useProfile()
 
   // compute per-user store base URL from the DOCKER_STORE app name when present
   const userStoreApp = apps.find((a) => a?.type === 'DOCKER_STORE')
   const storeBaseUrl = userStoreApp?.name ? `${apiConfig.storesScheme}://${userStoreApp.name}.${apiConfig.storesDomain}/` : undefined
+
+  // Create a stable fetchFn for the versioning module
+  const storeFetchFn: FetchFn = useCallback(
+    (path: string, init?: RequestInit) => fetchWithAuth(tokenProvider, path, init, storeBaseUrl),
+    [tokenProvider, storeBaseUrl]
+  )
+
+  useAutoVersioning(storeFetchFn)
 
   const storeApi = useStoreApi(tokenProvider, storeBaseUrl)
 
@@ -220,17 +246,111 @@ export function StorePage() {
   }
 
   const handleModalConfirm = async (data: string | File) => {
-    const parentId = params['*'] || (await storeApi.getRoot()).id
+    // Route is /s/:index/* so params['*'] is the folder/file ID (if any)
+    const raw = params['*']
+    const rootNode = await storeApi.getRoot()
+    const parentId = raw || rootNode.id
     try {
       if (modalType === 'folder') {
         await storeApi.create(parentId, data as string)
       } else {
-        await storeApi.create(parentId, (data as File).name, data as File)
+        const file = data as File
+        const locationHeader = await storeApi.create(parentId, file.name, file)
+        const nodeId = locationHeader?.split('/').pop() ?? parentId
+        emitFileSaved({
+          nodeId,
+          nodeName: file.name,
+          content: file,
+          author: profile?.email ?? profile?.username ?? 'unknown',
+        })
       }
       setReloadKey(k => k + 1)
       setShowCreateModal(false)
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : String(err)
+      if (errorMessage.includes('already-exists') || errorMessage.includes('already exists')) {
+        // File already exists on backend - offer to save a new version locally
+        const file = data as File
+        setPendingFile({ file, parentId })
+        setShowCreateModal(false)
+        setShowUpdateModal(true)
+      } else {
+        console.error('Create failed', err)
+      }
+    }
+  }
+
+  const handleConfirmUpdate = async () => {
+    if (!pendingFile) return
+
+    try {
+      // Find the existing node to link the version to the same nodeId
+      const existingNode = nodes.find(n => n.name === pendingFile.file.name)
+      const nodeId = existingNode?.id ?? pendingFile.parentId
+
+      // Save as a new version via the versioning API
+      emitFileSaved({
+        nodeId,
+        nodeName: pendingFile.file.name,
+        content: pendingFile.file,
+        author: profile?.email ?? profile?.username ?? 'unknown',
+      })
+    } finally {
+      setShowUpdateModal(false)
+      setPendingFile(null)
+    }
+  }
+
+  const handlePreviewVersion = async (version: FileVersion) => {
+    try {
+      const res = await storeFetchFn(`/api/versions/${encodeURIComponent(version.id)}/content`)
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      window.open(url, '_blank')
     } catch (err) {
-      console.error('Create failed', err)
+      console.error('Preview version failed', err)
+    }
+  }
+
+  const handleRestoreVersion = (version: FileVersion) => {
+    setVersionToRestore(version)
+    setShowRestoreModal(true)
+  }
+
+  const handleConfirmRestore = async () => {
+    if (!versionToRestore || !selected) return
+
+    try {
+      // Fetch the version content from backend versioning API
+      const contentRes = await storeFetchFn(`/api/versions/${encodeURIComponent(versionToRestore.id)}/content`)
+      const blob = await contentRes.blob()
+
+      // Create a new version from the restored content (tracability)
+      emitFileSaved({
+        nodeId: selected.id,
+        nodeName: selected.name,
+        content: blob,
+        author: profile?.email ?? profile?.username ?? 'unknown',
+      })
+
+      emitVersionRestored({
+        versionId: versionToRestore.id,
+        nodeId: selected.id,
+        nodeName: selected.name,
+      })
+
+      globalThis.dispatchEvent(
+        new CustomEvent('mbyte-toast', {
+          detail: { message: 'Fichier restauré avec succès. Une nouvelle version a été créée.' },
+        })
+      )
+
+      setReloadKey(k => k + 1)
+    } catch (err) {
+      console.error('Restore failed', err)
+    } finally {
+      setShowRestoreModal(false)
+      setVersionToRestore(null)
     }
   }
 
@@ -253,6 +373,8 @@ export function StorePage() {
         setViewMode={setViewMode}
         detailVisible={detailVisible}
         toggleDetail={() => setDetailVisible((v) => !v)}
+        historyVisible={historyVisible}
+        toggleHistory={() => setHistoryVisible((v) => !v)}
         setCurrentPath={setCurrentPath}
         onNavigate={(folderId) => handleOpenFolder(folderId)}
         onCreateFolder={handleCreateFolder}
@@ -271,6 +393,14 @@ export function StorePage() {
         </div>
 
         {detailVisible && <InfoPanel selected={selected ?? null} />}
+        {historyVisible && (
+          <VersionHistoryPanel
+            selected={selected ?? null}
+            fetchFn={storeFetchFn}
+            onPreview={handlePreviewVersion}
+            onRestore={handleRestoreVersion}
+          />
+        )}
       </div>
 
       {showCreateModal && (
@@ -281,6 +411,26 @@ export function StorePage() {
           onClose={() => setShowCreateModal(false)}
         />
       )}
+
+      <RestoreConfirmModal
+        visible={showRestoreModal}
+        version={versionToRestore}
+        onConfirm={handleConfirmRestore}
+        onClose={() => {
+          setShowRestoreModal(false)
+          setVersionToRestore(null)
+        }}
+      />
+
+      <ConfirmUpdateModal
+        visible={showUpdateModal}
+        fileName={pendingFile?.file.name ?? ''}
+        onConfirm={handleConfirmUpdate}
+        onCancel={() => {
+          setShowUpdateModal(false)
+          setPendingFile(null)
+        }}
+      />
     </CContainer>
   )
 }

@@ -1,6 +1,6 @@
 import { CButton } from '@coreui/react'
 import { CIcon } from '@coreui/icons-react'
-import { cilGrid, cilList, cilHome, cilInfo, cilFolder, cilCloudUpload } from '@coreui/icons'
+import { cilGrid, cilList, cilHome, cilInfo, cilFolder, cilCloudUpload, cilHistory } from '@coreui/icons'
 import { useTranslation } from 'react-i18next'
 
 type BreadcrumbItemInline = { id?: string, name: string }
@@ -11,6 +11,8 @@ type NavigationBarProps = Readonly<{
   setViewMode: (m: 'table' | 'grid') => void
   detailVisible: boolean
   toggleDetail: () => void
+  historyVisible: boolean
+  toggleHistory: () => void
   setCurrentPath: (p: BreadcrumbItemInline[]) => void
   // optional callback for navigation (parent can update the URL)
   onNavigate?: (folderId?: string) => void
@@ -18,7 +20,7 @@ type NavigationBarProps = Readonly<{
   onUploadFile?: () => void
 }>
 
-export function NavigationBar({ breadcrumb, viewMode, setViewMode, detailVisible, toggleDetail, setCurrentPath, onNavigate, onCreateFolder, onUploadFile }: NavigationBarProps) {
+export function NavigationBar({ breadcrumb, viewMode, setViewMode, detailVisible, toggleDetail, historyVisible, toggleHistory, setCurrentPath, onNavigate, onCreateFolder, onUploadFile }: NavigationBarProps) {
   const { t } = useTranslation()
 
   return (
@@ -77,6 +79,9 @@ export function NavigationBar({ breadcrumb, viewMode, setViewMode, detailVisible
 
         <CButton color={detailVisible ? 'primary' : 'light'} size="sm" onClick={toggleDetail} title={detailVisible ? 'Hide details' : 'Show details'}>
           <CIcon icon={cilInfo} />
+        </CButton>
+        <CButton color={historyVisible ? 'primary' : 'light'} size="sm" onClick={toggleHistory} title="Historique des versions">
+          <CIcon icon={cilHistory} />
         </CButton>
       </div>
     </div>

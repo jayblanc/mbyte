@@ -155,7 +155,12 @@ public class DataStoreBean implements DataStore {
 
     @Override
     public void delete(String key) throws DataStoreException {
-        throw new DataStoreException("NOT IMPLEMENTED");
+        Path file = Paths.get(base.toString(), key);
+        try {
+            Files.deleteIfExists(file);
+        } catch (IOException e) {
+            throw new DataStoreException("unable to delete file from storage", e);
+        }
     }
 
 
