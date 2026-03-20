@@ -34,6 +34,9 @@ export const apiConfig = {
   // Optional explicit store base URL (mainly for local development)
   storeBaseUrl: optionalEnv('VITE_API_STORE_BASE_URL'),
 
+  // Dedicated audit API host (defaults to production host)
+  auditBaseUrl: optionalEnv('VITE_API_AUDIT_BASE_URL') ?? 'https://audit.mbyte.fr/',
+
   // Store routing config (used when storeBaseUrl is not set)
   storesDomain: optionalEnv('VITE_STORES_DOMAIN') ?? 's.mbyte.fr',
   storesScheme: optionalEnv('VITE_STORES_SCHEME') ?? 'http',
