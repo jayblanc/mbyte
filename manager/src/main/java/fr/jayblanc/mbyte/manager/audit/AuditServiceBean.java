@@ -14,20 +14,23 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package fr.jayblanc.mbyte.audit.model;
+package fr.jayblanc.mbyte.manager.audit;
 
-public enum AuditAction {
-    CREATE_STORE,
-    START_STORE,
-    STOP_STORE,
-    UPLOAD,
-    DOWNLOAD,
-    CREATE_FOLDER,
-    DELETE,
-    RENAME,
-    UPDATE_FILE,
-    LIST_CHILDREN,
-    VIEW_NODE,
-    SEARCH,
-    NETWORK_INFO
+import fr.jayblanc.mbyte.manager.audit.entity.AuditEvent;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import org.eclipse.microprofile.reactive.messaging.Channel;
+import org.eclipse.microprofile.reactive.messaging.Emitter;
+
+@ApplicationScoped
+public class AuditServiceBean implements AuditService {
+
+    @Inject
+    @Channel("audit-events")
+    Emitter<AuditEvent> emitter;
+
+    @Override
+    public void save(AuditEvent auditEvent) {
+        emitter.send(auditEvent);
+    }
 }

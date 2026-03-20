@@ -17,5 +17,6 @@
 package fr.jayblanc.mbyte.audit.model;
 
 public enum AuditService {
-    STORE
+    STORE,
+    MANAGER
 }

@@ -14,20 +14,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package fr.jayblanc.mbyte.audit.model;
+package fr.jayblanc.mbyte.manager.audit.entity;
 
-public enum AuditAction {
-    CREATE_STORE,
-    START_STORE,
-    STOP_STORE,
-    UPLOAD,
-    DOWNLOAD,
-    CREATE_FOLDER,
-    DELETE,
-    RENAME,
-    UPDATE_FILE,
-    LIST_CHILDREN,
-    VIEW_NODE,
-    SEARCH,
-    NETWORK_INFO
+public enum AuditStatus {
+    SUCCESS,
+    FAILURE
 }
