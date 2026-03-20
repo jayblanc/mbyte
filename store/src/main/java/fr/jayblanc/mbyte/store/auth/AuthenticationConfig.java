@@ -17,10 +17,12 @@
 package fr.jayblanc.mbyte.store.auth;
 
 import io.smallrye.config.ConfigMapping;
+import io.quarkus.runtime.annotations.StaticInitSafe;
 
 /**
  * @author Jerome Blanchard
  */
+@StaticInitSafe
 @ConfigMapping(prefix = "store.auth")
 public interface AuthenticationConfig {
     String owner();

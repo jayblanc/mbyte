@@ -87,5 +87,39 @@
       "confirm": "Confirmer",
       "cancel": "Annuler"
     }
+  },
+  "audit": {
+    "title": "Audit",
+    "limit": "Limite",
+    "pageSize": "Lignes",
+    "searchPlaceholder": "Rechercher utilisateur, action, méthode ou chemin",
+    "refresh": "Rafraîchir",
+    "loading": "Chargement...",
+    "empty": "Aucun événement d'audit trouvé.",
+    "notConfigured": "L'API store n'est pas configurée pour ce profil.",
+    "totalFetched": "Récupérés : {{count}}",
+    "totalDisplayed": "Affichés : {{count}}",
+    "columns": {
+      "timestamp": "Date",
+      "user": "Utilisateur",
+      "action": "Action",
+      "status": "Statut",
+      "method": "Méthode",
+      "path": "Chemin"
+    },
+    "filters": {
+      "button": "Filtres",
+      "all": "Tous",
+      "status": "Statut",
+      "method": "Méthode",
+      "action": "Action",
+      "clear": "Réinitialiser"
+    },
+    "pagination": {
+      "summary": "{{first}}-{{last}} sur {{total}}",
+      "previous": "Précédent",
+      "next": "Suivant",
+      "page": "Page {{page}} / {{totalPages}}"
+    }
   }
 }

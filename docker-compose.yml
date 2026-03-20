@@ -56,6 +56,20 @@ services:
       mbyte.fr:
         ipv4_address: 172.25.0.4
 
+  amqp:
+    image: quay.io/artemiscloud/activemq-artemis-broker:latest
+    hostname: amqp
+    container_name: mbyte.amqp
+    environment:
+      - AMQ_USER=quarkus
+      - AMQ_PASSWORD=quarkus
+      - AMQ_EXTRA_ARGS=--no-autotune
+    ports:
+      - "5672:5672"
+    networks:
+      mbyte.fr:
+        ipv4_address: 172.25.0.8
+
   keycloak:
     build:
       context: .
@@ -101,10 +115,12 @@ services:
 
   manager:
     image: mbyte/manager:26.2-SNAPSHOT
+    user: root
     hostname: manager
     container_name: mbyte.manager
     depends_on:
       - db
+      - amqp
       - traefik
       - keycloak
     volumes:
@@ -153,6 +169,54 @@ services:
       - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
       - "traefik.http.services.gui.loadbalancer.server.port=80"
 
+  audit:
+    image: mbyte/audit:26.2-SNAPSHOT
+    hostname: audit
+    container_name: mbyte.audit
+    depends_on:
+      - db
+      - amqp
+      - keycloak
+    environment:
+      - QUARKUS_HTTP_PORT=8091
+      - QUARKUS_DATASOURCE_JDBC_URL=jdbc:postgresql://db:5432/audit
+      - MP_MESSAGING_INCOMING_AUDIT_EVENTS_HOST=amqp
+      - MP_MESSAGING_INCOMING_AUDIT_EVENTS_PORT=5672
+      - QUARKUS_OIDC_AUTH_SERVER_URL=https://auth.mbyte.fr/realms/mbyte
+    extra_hosts:
+      - "auth.mbyte.fr:172.25.0.2"
+    networks:
+      mbyte.fr:
+        ipv4_address: 172.25.0.9
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=mbyte.fr"
+      - "traefik.http.routers.audit.rule=Host(`audit.mbyte.fr`)"
+      - "traefik.http.routers.audit.entrypoints=websecure"
+      - "traefik.http.routers.audit.tls=true"
+      - "traefik.http.routers.audit-http.rule=Host(`audit.mbyte.fr`)"
+      - "traefik.http.routers.audit-http.entrypoints=web"
+      - "traefik.http.routers.audit-http.middlewares=redirect-to-https"
+      - "traefik.http.routers.audits.rule=Host(`audits.mbyte.fr`)"
+      - "traefik.http.routers.audits.entrypoints=websecure"
+      - "traefik.http.routers.audits.tls=true"
+      - "traefik.http.routers.audits.service=audit"
+      - "traefik.http.routers.audits-http.rule=Host(`audits.mbyte.fr`)"
+      - "traefik.http.routers.audits-http.entrypoints=web"
+      - "traefik.http.routers.audits-http.middlewares=redirect-to-https"
+      - "traefik.http.routers.audits-http.service=audit"
+      - "traefik.http.routers.audit-store-audits.rule=PathPrefix(`/api/audits`)"
+      - "traefik.http.routers.audit-store-audits.entrypoints=websecure"
+      - "traefik.http.routers.audit-store-audits.tls=true"
+      - "traefik.http.routers.audit-store-audits.priority=1000"
+      - "traefik.http.routers.audit-store-audits.service=audit"
+      - "traefik.http.routers.audit-store-audits-http.rule=PathPrefix(`/api/audits`)"
+      - "traefik.http.routers.audit-store-audits-http.entrypoints=web"
+      - "traefik.http.routers.audit-store-audits-http.middlewares=redirect-to-https"
+      - "traefik.http.routers.audit-store-audits-http.priority=1000"
+      - "traefik.http.routers.audit-store-audits-http.service=audit"
+      - "traefik.http.services.audit.loadbalancer.server.port=8091"
+
 networks:
   mbyte.fr:
     name: mbyte.fr
@@ -170,3 +234,6 @@ volumes:
       type: none
       o: bind
       device: /var/mbyte/db
+  mbyte.amqp.volume:
+    name: mbyte.fr.amqp
+    driver: local

@@ -17,6 +17,11 @@
 package fr.jayblanc.mbyte.manager.api.resources;
 
 import fr.jayblanc.mbyte.manager.api.dto.CommandDescriptor;
+import fr.jayblanc.mbyte.manager.audit.entity.AuditAction;
+import fr.jayblanc.mbyte.manager.audit.entity.AuditEvent;
+import fr.jayblanc.mbyte.manager.audit.entity.AuditService;
+import fr.jayblanc.mbyte.manager.audit.entity.AuditStatus;
+import fr.jayblanc.mbyte.manager.auth.AuthenticationService;
 import fr.jayblanc.mbyte.manager.core.*;
 import fr.jayblanc.mbyte.manager.core.entity.Application;
 import fr.jayblanc.mbyte.manager.notification.NotificationServiceException;
@@ -42,6 +47,8 @@ public class AppsResource {
     @Inject ProcessEngine engine;
     @Inject ApplicationCommandProvider commandProvider;
     @Inject ApplicationDescriptorRegistry descriptorRegistry;
+    @Inject fr.jayblanc.mbyte.manager.audit.AuditService auditService;
+    @Inject AuthenticationService authenticationService;
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -56,10 +63,26 @@ public class AppsResource {
     public Response createApp(@FormParam("type") String type, @FormParam("name") String name, @Context UriInfo uriInfo)
             throws ApplicationDescriptorNotFoundException, NotificationServiceException {
         LOGGER.log(Level.INFO, "POST /api/apps");
-        String id = core.createApp(type, name);
-        LOGGER.log(Level.INFO, "Application created with id: {0}", id);
-        URI location = uriInfo.getBaseUriBuilder().path(AppsResource.class).path(id).build();
-        return Response.created(location).entity(java.util.Map.of("id", id)).build();
+        boolean trackedStoreCreation = "DOCKER_STORE".equalsIgnoreCase(type);
+        try {
+            String id = core.createApp(type, name);
+            LOGGER.log(Level.INFO, "Application created with id: {0}", id);
+            if (trackedStoreCreation) {
+                emitAudit(AuditAction.CREATE_STORE, name, AuditStatus.SUCCESS, "POST", "/api/apps");
+            }
+            URI location = uriInfo.getBaseUriBuilder().path(AppsResource.class).path(id).build();
+            return Response.created(location).entity(java.util.Map.of("id", id)).build();
+        } catch (ApplicationDescriptorNotFoundException | NotificationServiceException e) {
+            if (trackedStoreCreation) {
+                emitAudit(AuditAction.CREATE_STORE, name, AuditStatus.FAILURE, "POST", "/api/apps");
+            }
+            throw e;
+        } catch (RuntimeException e) {
+            if (trackedStoreCreation) {
+                emitAudit(AuditAction.CREATE_STORE, name, AuditStatus.FAILURE, "POST", "/api/apps");
+            }
+            throw e;
+        }
     }
 
     @GET
@@ -87,7 +110,30 @@ public class AppsResource {
             throws ApplicationNotFoundException, AccessDeniedException, EnvironmentNotFoundException, ApplicationCommandNotFoundException,
             ProcessAlreadyRunningException, NotificationServiceException {
         LOGGER.log(Level.INFO, "POST /api/apps/{0}/procs", id);
-        return core.runAppCommand(id, name, null);
+        AuditAction action = mapProcAction(name);
+        String storeRef = id;
+        try {
+            if (action != null) {
+                Application app = core.getApp(id);
+                storeRef = app.getName();
+            }
+            String pid = core.runAppCommand(id, name, null);
+            if (action != null) {
+                emitAudit(action, storeRef, AuditStatus.SUCCESS, "POST", "/api/apps/" + id + "/procs");
+            }
+            return pid;
+        } catch (ApplicationNotFoundException | AccessDeniedException | EnvironmentNotFoundException | ApplicationCommandNotFoundException |
+                 ProcessAlreadyRunningException | NotificationServiceException e) {
+            if (action != null) {
+                emitAudit(action, storeRef, AuditStatus.FAILURE, "POST", "/api/apps/" + id + "/procs");
+            }
+            throw e;
+        } catch (RuntimeException e) {
+            if (action != null) {
+                emitAudit(action, storeRef, AuditStatus.FAILURE, "POST", "/api/apps/" + id + "/procs");
+            }
+            throw e;
+        }
     }
 
     @GET
@@ -115,5 +161,27 @@ public class AppsResource {
             throw new ProcessNotFoundException("Process with id: " + pid + " does not exists for application with id: " + id);
         }
         return proc;
+    }
+
+    private AuditAction mapProcAction(String commandName) {
+        if ("START".equalsIgnoreCase(commandName)) {
+            return AuditAction.START_STORE;
+        }
+        if ("STOP".equalsIgnoreCase(commandName)) {
+            return AuditAction.STOP_STORE;
+        }
+        return null;
+    }
+
+    private void emitAudit(AuditAction action, String storeId, AuditStatus status, String method, String path) {
+        AuditEvent event = new AuditEvent();
+        event.setUserId(authenticationService.getConnectedIdentifier());
+        event.setStoreId(storeId);
+        event.setAction(action);
+        event.setStatus(status);
+        event.setMethod(method);
+        event.setPath(path);
+        event.setService(AuditService.MANAGER);
+        auditService.save(event);
     }
 }

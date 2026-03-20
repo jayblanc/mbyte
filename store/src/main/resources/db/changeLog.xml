@@ -41,4 +41,29 @@
         </addColumn>
     </changeSet>
 
+
+    <changeSet id="4" author="gonskii">
+        <createTable tableName="audit_event">
+            <column name="id" type="varchar(36)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="ts" type="timestamp">
+                <constraints nullable="false"/>
+            </column>
+            <column name="user_id" type="varchar(128)"/>
+            <column name="store_id" type="varchar(128)"/>
+            <column name="action" type="varchar(32)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="varchar(16)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="method" type="varchar(8)"/>
+            <column name="path" type="varchar(512)"/>
+            <column name="service" type="varchar(32)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
 </databaseChangeLog>
