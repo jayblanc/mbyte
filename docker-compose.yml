@@ -107,6 +107,8 @@ services:
       - db
       - traefik
       - keycloak
+    group_add:
+      - "984"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:rw
     extra_hosts:
@@ -131,6 +133,7 @@ services:
       - MANAGER_TOPOLOGY_HOST=consul
       - MANAGER_TOPOLOGY_PORT=8500
       - MANAGER_INSTANCE=mbyte.fr
+      - MANAGER_RUNTIME_DOCKER_SERVER=unix:///var/run/docker.sock
 
   gui:
     image: mbyte/gui:26.2-SNAPSHOT

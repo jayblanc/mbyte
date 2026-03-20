@@ -4,7 +4,8 @@
     "now": "just now",
     "user": "User",
     "unknown": "Unknown",
-    "testNotification": "Test notification via CoreUI."
+    "testNotification": "Test notification via CoreUI.",
+    "cancel": "Cancel"
   },
   "auth": {
     "logout": "Sign out"
@@ -87,6 +88,7 @@
       "fileLabel": "File",
       "confirm": "Confirm",
       "cancel": "Cancel"
-    }
+    },
+    "fileExistsError": "The file \"{{fileName}}\" already exists. Please rename it or delete the existing file manually."
   }
 }

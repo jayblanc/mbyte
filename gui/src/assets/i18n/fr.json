@@ -1,10 +1,11 @@
 {
   "common": {
     "appName": "mbyte",
-    "now": "à l’instant",
+    "now": "à l'instant",
     "user": "Utilisateur",
     "unknown": "Inconnu",
-    "testNotification": "Notification de test via CoreUI."
+    "testNotification": "Notification de test via CoreUI.",
+    "cancel": "Annuler"
   },
   "auth": {
     "logout": "Se délogger"
@@ -86,6 +87,7 @@
       "fileLabel": "Fichier",
       "confirm": "Confirmer",
       "cancel": "Annuler"
-    }
+    },
+    "fileExistsError": "Le fichier \"{{fileName}}\" existe déjà. Veuillez le renommer ou supprimer l'ancien fichier manuellement."
   }
 }

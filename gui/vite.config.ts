@@ -24,4 +24,7 @@ export default defineConfig({
     outDir: 'target/gui-dist',
     emptyOutDir: true,
   },
+  resolve: {
+    dedupe: ['react', 'react-dom'],
+  },
 })

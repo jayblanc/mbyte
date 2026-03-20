@@ -41,4 +41,34 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="4" author="versioning">
+        <createTable tableName="file_version">
+            <column name="id" type="varchar(50)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="node_id" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="node_name" type="varchar(255)"/>
+            <column name="content" type="varchar(255)"/>
+            <column name="mimetype" type="varchar(50)"/>
+            <column name="size" type="bigint"/>
+            <column name="author" type="varchar(250)"/>
+            <column name="comment" type="text"/>
+            <column name="created_at" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="version_number" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createIndex tableName="file_version" indexName="idx_fv_node_id">
+            <column name="node_id"/>
+        </createIndex>
+        <createIndex tableName="file_version" indexName="idx_fv_node_created">
+            <column name="node_id"/>
+            <column name="created_at"/>
+        </createIndex>
+    </changeSet>
+
 </databaseChangeLog>

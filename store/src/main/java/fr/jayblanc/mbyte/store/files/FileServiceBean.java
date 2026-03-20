@@ -203,7 +203,7 @@ public class FileServiceBean implements FileService, IndexableContentProvider {
         if (node == null) {
             throw new NodeNotFoundException("A node with name: " + name + " does not exists in tree with id: " + pnode.getId());
         }
-        int children = em.createNamedQuery("Node.countChildren", Integer.class).setParameter("parent", pnode.getId()).getSingleResult();
+        long children = em.createNamedQuery("Node.countChildren", Long.class).setParameter("parent", node.getId()).getSingleResult();
         if (children > 0) {
             throw new NodeNotEmptyException("The node with name: " + name + " is not empty");
         }
@@ -217,6 +217,11 @@ public class FileServiceBean implements FileService, IndexableContentProvider {
         pnode.setModification(System.currentTimeMillis());
         notification.notify(eventType, node.getId());
         notification.notify("folder.update", pnode.getId());
+    }
+
+    @Override
+    public void flush() {
+        em.flush();
     }
 
     //INTERNAL OPERATIONS

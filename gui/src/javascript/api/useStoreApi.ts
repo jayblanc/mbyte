@@ -30,8 +30,10 @@ export function useStoreApi(tokenProvider: TokenProvider, baseUrlOverride?: stri
         return await fn(...args)
       } catch (err: any) {
         const msg = err?.message ?? String(err)
-        // Dispatch a global event so `App.tsx` can show a toast
-        globalThis.dispatchEvent(new CustomEvent('mbyte-toast', { detail: { message: msg } }))
+        // Don't show toast for "already-exists" errors — handled by the UI
+        if (!msg.includes('already-exists')) {
+          globalThis.dispatchEvent(new CustomEvent('mbyte-toast', { detail: { message: msg } }))
+        }
         throw err
       }
     }) as T
