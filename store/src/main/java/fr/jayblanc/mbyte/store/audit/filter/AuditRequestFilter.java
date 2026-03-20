@@ -48,9 +48,9 @@ public class AuditRequestFilter implements ContainerRequestFilter {
 
         String downloadParam = requestContext.getUriInfo().getQueryParameters().getFirst("download");
         boolean download = Boolean.parseBoolean(downloadParam);
+        String contentType = requestContext.getHeaderString("Content-Type");
 
-
-        event.setAction(AuditActionMapper.from(event.getMethod(), event.getPath(), download));
+        event.setAction(AuditActionMapper.from(event.getMethod(), event.getPath(), download, contentType));
         event.setStatus(AuditStatus.SUCCESS);
 
         requestContext.setProperty(AUDIT_CONTEXT_KEY, event);

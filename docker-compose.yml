@@ -115,6 +115,7 @@ services:
 
   manager:
     image: mbyte/manager:26.2-SNAPSHOT
+    user: root
     hostname: manager
     container_name: mbyte.manager
     depends_on:
@@ -195,6 +196,24 @@ services:
       - "traefik.http.routers.audit-http.rule=Host(`audit.mbyte.fr`)"
       - "traefik.http.routers.audit-http.entrypoints=web"
       - "traefik.http.routers.audit-http.middlewares=redirect-to-https"
+      - "traefik.http.routers.audits.rule=Host(`audits.mbyte.fr`)"
+      - "traefik.http.routers.audits.entrypoints=websecure"
+      - "traefik.http.routers.audits.tls=true"
+      - "traefik.http.routers.audits.service=audit"
+      - "traefik.http.routers.audits-http.rule=Host(`audits.mbyte.fr`)"
+      - "traefik.http.routers.audits-http.entrypoints=web"
+      - "traefik.http.routers.audits-http.middlewares=redirect-to-https"
+      - "traefik.http.routers.audits-http.service=audit"
+      - "traefik.http.routers.audit-store-audits.rule=PathPrefix(`/api/audits`)"
+      - "traefik.http.routers.audit-store-audits.entrypoints=websecure"
+      - "traefik.http.routers.audit-store-audits.tls=true"
+      - "traefik.http.routers.audit-store-audits.priority=1000"
+      - "traefik.http.routers.audit-store-audits.service=audit"
+      - "traefik.http.routers.audit-store-audits-http.rule=PathPrefix(`/api/audits`)"
+      - "traefik.http.routers.audit-store-audits-http.entrypoints=web"
+      - "traefik.http.routers.audit-store-audits-http.middlewares=redirect-to-https"
+      - "traefik.http.routers.audit-store-audits-http.priority=1000"
+      - "traefik.http.routers.audit-store-audits-http.service=audit"
       - "traefik.http.services.audit.loadbalancer.server.port=8091"
 
 networks:

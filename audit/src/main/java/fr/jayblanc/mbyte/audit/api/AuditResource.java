@@ -29,7 +29,7 @@ import jakarta.ws.rs.core.MediaType;
 
 import java.util.List;
 
-@Path("/api/audits")
+@Path("/audits")
 @Produces(MediaType.APPLICATION_JSON)
 public class AuditResource {
 
