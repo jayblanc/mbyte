@@ -120,6 +120,7 @@ services:
     container_name: mbyte.manager
     depends_on:
       - db
+      - amqp
       - traefik
       - keycloak
     volumes:
