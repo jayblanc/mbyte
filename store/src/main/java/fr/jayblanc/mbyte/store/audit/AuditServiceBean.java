@@ -14,16 +14,20 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package fr.jayblanc.mbyte.store.auth;
+package fr.jayblanc.mbyte.store.audit;
 
-import io.smallrye.config.ConfigMapping;
-import io.quarkus.runtime.annotations.StaticInitSafe;
+import fr.jayblanc.mbyte.store.audit.entity.AuditEvent;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import org.eclipse.microprofile.reactive.messaging.Channel;
+import org.eclipse.microprofile.reactive.messaging.Emitter;
 
-/**
- * @author Jerome Blanchard
- */
-@StaticInitSafe
-@ConfigMapping(prefix = "store.auth")
-public interface AuthenticationConfig {
-    String owner();
+@ApplicationScoped
+public class AuditServiceBean implements AuditService {
+    @Inject @Channel("audit-events") Emitter<AuditEvent> emitter;
+
+    @Override
+    public void save(AuditEvent auditEvent) {
+        emitter.send(auditEvent);
+    }
 }

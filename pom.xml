@@ -34,6 +34,7 @@
   </scm>
 
     <modules>
+        <module>audit</module>
         <module>store</module>
         <module>manager</module>
         <module>gui</module>

@@ -6,16 +6,13 @@
         <artifactId>parent</artifactId>
         <version>26.2-SNAPSHOT</version>
     </parent>
-    <artifactId>store</artifactId>
-    <name>The M[iage].byte project :: Store</name>
+    <artifactId>audit</artifactId>
+    <name>The M[iage].byte project :: Audit</name>
     <version>26.2-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <properties>
         <skipITs>true</skipITs>
-        <version.tika>2.9.1</version.tika>
-        <version.lucene>9.4.1</version.lucene>
-        <version.consul-client>1.5.3</version.consul-client>
     </properties>
 
     <dependencyManagement>
@@ -33,27 +30,15 @@
     <dependencies>
         <dependency>
             <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-messaging</artifactId>
+            <artifactId>quarkus-resteasy-jackson</artifactId>
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-messaging-amqp</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-resteasy-multipart</artifactId>
+            <artifactId>quarkus-arc</artifactId>
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-hibernate-orm</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-narayana-jta</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-hibernate-validator</artifactId>
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
@@ -62,18 +47,6 @@
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-jdbc-postgresql</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-resteasy-jaxb</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-resteasy-jackson</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-arc</artifactId>
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
@@ -89,52 +62,8 @@
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-smallrye-context-propagation</artifactId>
+            <artifactId>quarkus-messaging-amqp</artifactId>
         </dependency>
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-scheduler</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-vertx</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>commons-codec</groupId>
-            <artifactId>commons-codec</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.tika</groupId>
-            <artifactId>tika-core</artifactId>
-            <version>${version.tika}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.lucene</groupId>
-            <artifactId>lucene-core</artifactId>
-            <version>${version.lucene}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.lucene</groupId>
-            <artifactId>lucene-queryparser</artifactId>
-            <version>${version.lucene}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.lucene</groupId>
-            <artifactId>lucene-highlighter</artifactId>
-            <version>${version.lucene}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.orbitz.consul</groupId>
-            <artifactId>consul-client</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-simple</artifactId>
-                </exclusion>
-            </exclusions>
-            <version>${version.consul-client}</version>
-        </dependency>
-
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-container-image-docker</artifactId>

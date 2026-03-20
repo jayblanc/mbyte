@@ -14,16 +14,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package fr.jayblanc.mbyte.store.auth;
-
-import io.smallrye.config.ConfigMapping;
-import io.quarkus.runtime.annotations.StaticInitSafe;
+package fr.jayblanc.mbyte.store.audit.entity;
 
 /**
- * @author Jerome Blanchard
+ * Enums representing the various departments or roles involved in the audit (e.g., manager, etc.)
  */
-@StaticInitSafe
-@ConfigMapping(prefix = "store.auth")
-public interface AuthenticationConfig {
-    String owner();
+public enum AuditService {
+    STORE
 }

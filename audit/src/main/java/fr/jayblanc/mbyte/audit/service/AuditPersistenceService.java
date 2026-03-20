@@ -14,16 +14,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package fr.jayblanc.mbyte.store.auth;
+package fr.jayblanc.mbyte.audit.service;
 
-import io.smallrye.config.ConfigMapping;
-import io.quarkus.runtime.annotations.StaticInitSafe;
+import fr.jayblanc.mbyte.audit.model.AuditEvent;
 
-/**
- * @author Jerome Blanchard
- */
-@StaticInitSafe
-@ConfigMapping(prefix = "store.auth")
-public interface AuthenticationConfig {
-    String owner();
+import java.util.List;
+
+public interface AuditPersistenceService {
+    void save(AuditEvent auditEvent);
+
+    List<AuditEvent> list(int limit, String storeId);
 }

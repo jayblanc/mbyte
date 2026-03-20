@@ -7,42 +7,7 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.0.xsd
         http://www.liquibase.org/xml/ns/dbchangelog-ext https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-    <changeSet id="1" author="jerome">
-        <createTable tableName="node">
-            <column name="id" type="varchar">
-                <constraints primaryKey="true" nullable="false"/>
-            </column>
-            <column name="parent" type="varchar(50)"/>
-            <column name="name" type="varchar(255)"/>
-            <column name="mimetype" type="varchar(50)" />
-            <column name="creation" type="bigint"/>
-            <column name="modification" type="bigint"/>
-            <column name="content" type="varchar(50)"/>
-            <column name="type" type="varchar"/>
-            <column name="version" type="bigint">
-                <constraints nullable="false"/>
-            </column>
-            <column name="size" type="bigint">
-                <constraints nullable="false"/>
-            </column>
-        </createTable>
-    </changeSet>
-
-    <changeSet id="2" author="jerome">
-        <modifyDataType
-                columnName="content"
-                newDataType="varchar(255)"
-                tableName="node"/>
-    </changeSet>
-
-    <changeSet id="3" author="jerome">
-        <addColumn tableName="node">
-            <column name="owner" type="varchar(250)"/>
-        </addColumn>
-    </changeSet>
-
-
-    <changeSet id="4" author="gonskii">
+    <changeSet id="1" author="gonski">
         <createTable tableName="audit_event">
             <column name="id" type="varchar(36)">
                 <constraints primaryKey="true" nullable="false"/>
