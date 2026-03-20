@@ -1,7 +1,8 @@
 import { CSidebar, CSidebarHeader, CSidebarNav } from '@coreui/react'
-import { DashboardIcon, SidebarBrand, SidebarNavItem, SidebarProfile, StoreIcon } from '../index'
+import {DashboardIcon, ManageIcon, SidebarBrand, SidebarNavItem, SidebarProfile, StoreIcon} from '../index'
 import { useManagerStatus } from '../../auth/useManagerStatus'
 import { useEffect } from 'react'
+import {SidebarStoreNavItem} from "./SidebarStoreNavItem.tsx";
 
 export type SideBarProps = {
   narrow: boolean
@@ -35,9 +36,12 @@ export function SideBar({ narrow }: SideBarProps) {
         </SidebarNavItem>
 
         {hasStore && (
-          <SidebarNavItem to="/s/0/" icon={<StoreIcon size={narrow ? 'lg' : undefined} />} compact={narrow}>
+          /*<SidebarNavItem to="/s/0/" icon={<StoreIcon size={narrow ? 'lg' : undefined} />} compact={narrow}>
             Store
-          </SidebarNavItem>
+          </SidebarNavItem>*/
+            <SidebarStoreNavItem to="/s/0/" icon={<StoreIcon size={narrow ? 'lg' : undefined} />} compact={narrow} to2="/m/0" icon2={<ManageIcon size={narrow ? 'lg': undefined}/>}>
+        Store
+    </SidebarStoreNavItem>
         )}
       </CSidebarNav>
     </CSidebar>

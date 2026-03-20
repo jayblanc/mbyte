@@ -56,3 +56,10 @@ body {
   --cui-btn-active-bg: #1fa8d1;
   --cui-btn-active-border-color: #1fa8d1;
 }
+
+.mbyte-sidebar-link__inner{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}

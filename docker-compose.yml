@@ -102,6 +102,7 @@ services:
   manager:
     image: mbyte/manager:26.2-SNAPSHOT
     hostname: manager
+    user: root
     container_name: mbyte.manager
     depends_on:
       - db

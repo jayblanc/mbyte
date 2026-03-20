@@ -9,6 +9,7 @@ import {StorePage} from './pages/StorePage'
 import {Header, SideBar} from './components'
 import {CToast, CToastBody, CToastHeader,} from '@coreui/react'
 import {useWebSocket} from './utils/useWebSocket'
+import {ManageStorePage} from "./pages/ManageStorePage.tsx";
 
 export default function App() {
   const { t } = useTranslation()
@@ -58,6 +59,10 @@ export default function App() {
                   <StorePage />
                 }
               />
+                <Route path="/m/:index/*" element={
+                    <ManageStorePage/>
+                }
+                />
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
 
